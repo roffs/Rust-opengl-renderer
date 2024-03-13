@@ -34,10 +34,48 @@ fn main() -> Result<()> {
 
     let shader_program = create_shader_program(vertex_shader, fragment_shader)?;
 
+    unsafe { gl::UseProgram(shader_program) };
+
+    // VAO & VBO
+
+    let vertices: [f32; 9] = [-0.5, -0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.5, 0.0];
+
+    let mut vertex_array_object = 0;
+    unsafe { gl::GenVertexArrays(1, &mut vertex_array_object) };
+
+    let mut vertex_buffer = 0;
+    unsafe { gl::GenBuffers(1, &mut vertex_buffer) };
+
+    unsafe {
+        gl::BindVertexArray(vertex_array_object);
+        gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
+        gl::BufferData(
+            gl::ARRAY_BUFFER,
+            std::mem::size_of_val(&vertices) as isize,
+            vertices.as_ptr().cast(),
+            gl::STATIC_DRAW,
+        );
+
+        gl::VertexAttribPointer(
+            0,
+            3,
+            gl::FLOAT,
+            gl::FALSE,
+            3 * std::mem::size_of::<f32>() as i32,
+            std::ptr::null(),
+        );
+
+        gl::EnableVertexAttribArray(0);
+    }
+
+    // EVENT LOOP
+
     while !window.should_close() {
         unsafe {
             gl::ClearColor(0.3, 0.4, 0.6, 1.0);
             gl::Clear(gl::COLOR_BUFFER_BIT);
+
+            gl::DrawArrays(gl::TRIANGLES, 0, 3);
         }
 
         process_input(&mut window);
@@ -104,7 +142,6 @@ fn create_shader(file_path: &str, shader_type: gl::types::GLenum) -> Result<gl::
     }
 
     println!("{} shader was compiled successfully.", shader_type);
-
     Ok(shader)
 }
 
@@ -140,5 +177,6 @@ fn create_shader_program(
         );
     };
 
+    println!("Shader program was linked successfully");
     Ok(program)
 }
