@@ -8,7 +8,7 @@ pub struct Program {
 }
 
 impl Program {
-    pub fn from_shaders(gl: gl::Gl, shaders: &[Shader]) -> Result<Program> {
+    pub fn from_shaders(gl: &gl::Gl, shaders: &[Shader]) -> Result<Program> {
         let program_id = unsafe { gl.CreateProgram() };
 
         for shader in shaders {
@@ -39,7 +39,11 @@ impl Program {
             );
         };
 
-        Ok(Program { gl, id: program_id })
+        println!("Shader program was created successfully");
+        Ok(Program {
+            gl: gl.clone(),
+            id: program_id,
+        })
     }
 
     pub fn use_program(&self) {

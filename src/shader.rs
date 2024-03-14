@@ -9,7 +9,7 @@ impl Shader {
         self.id
     }
 
-    pub fn from_source(gl: gl::Gl, file_path: &str, kind: gl::types::GLenum) -> Result<Shader> {
+    pub fn from_source(gl: &gl::Gl, file_path: &str, kind: gl::types::GLenum) -> Result<Shader> {
         let shader_source =
             std::fs::read_to_string(file_path).expect("Should have been able to read the file");
 
@@ -54,14 +54,17 @@ impl Shader {
         }
 
         println!("{} shader was compiled successfully.", shader_type);
-        Ok(Shader { gl, id: shader_id })
+        Ok(Shader {
+            gl: gl.clone(),
+            id: shader_id,
+        })
     }
 
-    pub fn from_vertex_source(gl: gl::Gl, file_path: &str) -> Result<Shader> {
+    pub fn from_vertex_source(gl: &gl::Gl, file_path: &str) -> Result<Shader> {
         Shader::from_source(gl, file_path, gl::VERTEX_SHADER)
     }
 
-    pub fn from_fragment_source(gl: gl::Gl, file_path: &str) -> Result<Shader> {
+    pub fn from_fragment_source(gl: &gl::Gl, file_path: &str) -> Result<Shader> {
         Shader::from_source(gl, file_path, gl::FRAGMENT_SHADER)
     }
 }
