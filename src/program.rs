@@ -7,10 +7,6 @@ pub struct Program {
 }
 
 impl Program {
-    pub fn id(&self) -> gl::types::GLuint {
-        self.id
-    }
-
     pub fn from_shaders(shaders: &[Shader]) -> Result<Program> {
         let program_id = unsafe { gl::CreateProgram() };
 
