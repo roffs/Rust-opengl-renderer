@@ -1,5 +1,6 @@
 mod program;
 mod shader;
+mod texture;
 mod vertex;
 
 use anyhow::Result;
@@ -7,6 +8,7 @@ use anyhow::Result;
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 use program::Program;
 use shader::Shader;
+use texture::Texture;
 use vertex::Vertex;
 
 fn main() -> Result<()> {
@@ -41,9 +43,9 @@ fn main() -> Result<()> {
     // VAO & VBO
 
     let vertices: [Vertex; 3] = [
-        Vertex::new(-0.5, -0.5, 0.0),
-        Vertex::new(0.5, -0.5, 0.0),
-        Vertex::new(0.0, 0.5, 0.0),
+        Vertex::new((-0.5, -0.5, 0.0), (0.0, 0.0)),
+        Vertex::new((0.5, -0.5, 0.0), (1.0, 0.0)),
+        Vertex::new((0.0, 0.5, 0.0), (0.5, 1.0)),
     ];
 
     let mut vertex_array_object = 0;
@@ -67,12 +69,25 @@ fn main() -> Result<()> {
             3,
             gl::FLOAT,
             gl::FALSE,
-            3 * std::mem::size_of::<f32>() as i32,
+            5 * std::mem::size_of::<f32>() as i32,
             std::ptr::null(),
         );
+        gl.VertexAttribPointer(
+            1,
+            2,
+            gl::FLOAT,
+            gl::FALSE,
+            5 * std::mem::size_of::<f32>() as i32,
+            (3 * std::mem::size_of::<f32>()) as *const _,
+        );
+        gl.EnableVertexAttribArray(1);
 
         gl.EnableVertexAttribArray(0);
     }
+
+    // TEXTURE
+
+    let texture = Texture::load(&gl, "src/textures/texture.png");
 
     // EVENT LOOP
 
