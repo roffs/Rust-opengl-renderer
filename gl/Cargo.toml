@@ -1,13 +1,11 @@
-workspace = { members = ["gl"] }
 [package]
-name = "rust-opengl-renderer"
+name = "gl"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-cgmath = "0.18.0"
-gl = { path = "gl" }
-glfw = "0.55.0"
-anyhow = "1.0.81"
+
+[build-dependencies]
+gl_generator = { version = "0.14.0" }

@@ -16,7 +16,7 @@ fn main() -> Result<()> {
     glfw.window_hint(WindowHint::OpenGlProfile(OpenGlProfileHint::Core));
     glfw.window_hint(WindowHint::OpenGlForwardCompat(true));
 
-    let (mut window, _events) = glfw
+    let (mut window, events) = glfw
         .create_window(
             1080,
             720,
@@ -28,16 +28,14 @@ fn main() -> Result<()> {
     window.make_current();
     window.set_key_polling(true);
 
-    gl::load_with(|s| window.get_proc_address(s) as *const _);
-
-    window.set_framebuffer_size_callback(resize_callback);
+    let gl = gl::Gl::load_with(|s| window.get_proc_address(s) as *const _);
 
     // SHADER PROGRAM
 
-    let vertex_shader = Shader::from_vertex_source("src/shaders/shader.vert")?;
-    let fragment_shader = Shader::from_fragment_source("src/shaders/shader.frag")?;
+    let vertex_shader = Shader::from_vertex_source(gl.clone(), "src/shaders/shader.vert")?;
+    let fragment_shader = Shader::from_fragment_source(gl.clone(), "src/shaders/shader.frag")?;
 
-    let shader_program = Program::from_shaders(&[vertex_shader, fragment_shader])?;
+    let shader_program = Program::from_shaders(gl.clone(), &[vertex_shader, fragment_shader])?;
     shader_program.use_program();
 
     // VAO & VBO
@@ -49,22 +47,22 @@ fn main() -> Result<()> {
     ];
 
     let mut vertex_array_object = 0;
-    unsafe { gl::GenVertexArrays(1, &mut vertex_array_object) };
+    unsafe { gl.GenVertexArrays(1, &mut vertex_array_object) };
 
     let mut vertex_buffer = 0;
-    unsafe { gl::GenBuffers(1, &mut vertex_buffer) };
+    unsafe { gl.GenBuffers(1, &mut vertex_buffer) };
 
     unsafe {
-        gl::BindVertexArray(vertex_array_object);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
-        gl::BufferData(
+        gl.BindVertexArray(vertex_array_object);
+        gl.BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
+        gl.BufferData(
             gl::ARRAY_BUFFER,
             (std::mem::size_of::<Vertex>() * vertices.len()) as isize,
             vertices.as_ptr().cast(),
             gl::STATIC_DRAW,
         );
 
-        gl::VertexAttribPointer(
+        gl.VertexAttribPointer(
             0,
             3,
             gl::FLOAT,
@@ -73,30 +71,35 @@ fn main() -> Result<()> {
             std::ptr::null(),
         );
 
-        gl::EnableVertexAttribArray(0);
+        gl.EnableVertexAttribArray(0);
     }
 
     // EVENT LOOP
 
     while !window.should_close() {
         unsafe {
-            gl::ClearColor(0.3, 0.4, 0.6, 1.0);
-            gl::Clear(gl::COLOR_BUFFER_BIT);
+            gl.ClearColor(0.3, 0.4, 0.6, 1.0);
+            gl.Clear(gl::COLOR_BUFFER_BIT);
 
-            gl::DrawArrays(gl::TRIANGLES, 0, 3);
+            gl.DrawArrays(gl::TRIANGLES, 0, 3);
         }
 
         process_input(&mut window);
 
         glfw.poll_events();
         window.swap_buffers();
+
+        for (_, event) in glfw::flush_messages(&events) {
+            match event {
+                glfw::WindowEvent::Key(glfw::Key::Escape, _, glfw::Action::Press, _) => {
+                    window.set_should_close(true)
+                }
+                _ => {}
+            }
+        }
     }
 
     Ok(())
-}
-
-fn resize_callback(_: &mut glfw::Window, width: i32, height: i32) {
-    unsafe { gl::Viewport(0, 0, width, height) };
 }
 
 fn process_input(window: &mut glfw::Window) {
