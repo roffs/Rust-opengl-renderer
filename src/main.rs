@@ -1,8 +1,10 @@
+mod program;
 mod shader;
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 
 use glfw::{Context, OpenGlProfileHint, WindowHint};
+use program::Program;
 use shader::Shader;
 
 fn main() -> Result<()> {
@@ -33,9 +35,8 @@ fn main() -> Result<()> {
     let vertex_shader = Shader::from_vertex_source("src/shaders/shader.vert")?;
     let fragment_shader = Shader::from_fragment_source("src/shaders/shader.frag")?;
 
-    let shader_program = create_shader_program(vertex_shader.id(), fragment_shader.id())?;
-
-    unsafe { gl::UseProgram(shader_program) };
+    let shader_program = Program::from_shaders(&[vertex_shader, fragment_shader])?;
+    shader_program.use_program();
 
     // VAO & VBO
 
@@ -96,42 +97,4 @@ fn process_input(window: &mut glfw::Window) {
     if window.get_key(glfw::Key::Escape) == glfw::Action::Press {
         window.set_should_close(true);
     }
-}
-
-fn create_shader_program(
-    vertex_shader: gl::types::GLenum,
-    fragment_shader: gl::types::GLenum,
-) -> Result<gl::types::GLuint> {
-    let program = unsafe { gl::CreateProgram() };
-
-    unsafe {
-        gl::AttachShader(program, vertex_shader);
-        gl::AttachShader(program, fragment_shader);
-        gl::LinkProgram(program);
-        gl::DetachShader(program, vertex_shader);
-        gl::DetachShader(program, fragment_shader);
-    }
-
-    let mut success: gl::types::GLint = 1;
-    unsafe {
-        gl::GetShaderiv(program, gl::LINK_STATUS, &mut success);
-    }
-
-    if success == 0 {
-        let mut log_len = 0_i32;
-        let mut info_log: Vec<u8> = Vec::with_capacity(1024);
-
-        unsafe {
-            gl::GetProgramInfoLog(program, 512, &mut log_len, info_log.as_mut_ptr().cast());
-            info_log.set_len(log_len.try_into().unwrap());
-        }
-
-        bail!(
-            "Error: Program linking failed: {}",
-            String::from_utf8_lossy(&info_log)
-        );
-    };
-
-    println!("Shader program was linked successfully");
-    Ok(program)
 }
