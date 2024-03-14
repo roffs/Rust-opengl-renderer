@@ -87,7 +87,8 @@ fn main() -> Result<()> {
 
     // TEXTURE
 
-    let texture = Texture::load(&gl, "src/textures/texture.png");
+    let texture = Texture::load(&gl, "src/textures/texture.png")?;
+    texture.bind();
 
     // EVENT LOOP
 

@@ -36,16 +36,20 @@ impl Texture {
                 img.as_ptr().cast(),
             );
             gl.GenerateMipmap(gl::TEXTURE_2D);
+
+            gl.BindTexture(gl::TEXTURE_2D, 0);
         }
 
         Ok(Texture { gl: gl.clone(), id })
+    }
+
+    pub fn bind(&self) {
+        unsafe { self.gl.BindTexture(gl::TEXTURE_2D, self.id) };
     }
 }
 
 impl Drop for Texture {
     fn drop(&mut self) {
-        unsafe {
-            self.gl.DeleteTextures(1, [self.id].as_ptr());
-        }
+        unsafe { self.gl.DeleteTextures(1, [self.id].as_ptr()) };
     }
 }
