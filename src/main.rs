@@ -1,8 +1,9 @@
-use std::fs;
+mod shader;
 
 use anyhow::{bail, Result};
 
 use glfw::{Context, OpenGlProfileHint, WindowHint};
+use shader::Shader;
 
 fn main() -> Result<()> {
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
@@ -29,10 +30,10 @@ fn main() -> Result<()> {
 
     // SHADER PROGRAM
 
-    let vertex_shader = create_shader("src/shaders/shader.vert", gl::VERTEX_SHADER)?;
-    let fragment_shader = create_shader("src/shaders/shader.frag", gl::FRAGMENT_SHADER)?;
+    let vertex_shader = Shader::from_vertex_source("src/shaders/shader.vert")?;
+    let fragment_shader = Shader::from_fragment_source("src/shaders/shader.frag")?;
 
-    let shader_program = create_shader_program(vertex_shader, fragment_shader)?;
+    let shader_program = create_shader_program(vertex_shader.id(), fragment_shader.id())?;
 
     unsafe { gl::UseProgram(shader_program) };
 
@@ -97,54 +98,6 @@ fn process_input(window: &mut glfw::Window) {
     }
 }
 
-fn create_shader(file_path: &str, shader_type: gl::types::GLenum) -> Result<gl::types::GLuint> {
-    let shader_source =
-        fs::read_to_string(file_path).expect("Should have been able to read the file");
-
-    let shader = unsafe { gl::CreateShader(shader_type) };
-
-    let shader_type = match shader_type {
-        gl::VERTEX_SHADER => "Vertex",
-        gl::FRAGMENT_SHADER => "Fragment",
-        _ => "Unspecified type",
-    };
-
-    unsafe {
-        gl::ShaderSource(
-            shader,
-            1,
-            &shader_source.as_bytes().as_ptr().cast(),
-            std::ptr::null(),
-        );
-        gl::CompileShader(shader);
-    }
-
-    let mut success: gl::types::GLint = 1;
-    unsafe {
-        gl::GetShaderiv(shader, gl::COMPILE_STATUS, &mut success);
-    }
-
-    if success == 0 {
-        let mut log_len = 0_i32;
-        let mut info_log: Vec<u8> = Vec::with_capacity(1024);
-
-        unsafe {
-            gl::GetShaderInfoLog(shader, 512, &mut log_len, info_log.as_mut_ptr().cast());
-            info_log.set_len(log_len.try_into().unwrap());
-        }
-
-        bail!(
-            "Error: {} shader from {} compilation failed: {}",
-            shader_type,
-            file_path,
-            String::from_utf8_lossy(&info_log)
-        );
-    }
-
-    println!("{} shader was compiled successfully.", shader_type);
-    Ok(shader)
-}
-
 fn create_shader_program(
     vertex_shader: gl::types::GLenum,
     fragment_shader: gl::types::GLenum,
@@ -155,6 +108,8 @@ fn create_shader_program(
         gl::AttachShader(program, vertex_shader);
         gl::AttachShader(program, fragment_shader);
         gl::LinkProgram(program);
+        gl::DetachShader(program, vertex_shader);
+        gl::DetachShader(program, fragment_shader);
     }
 
     let mut success: gl::types::GLint = 1;
