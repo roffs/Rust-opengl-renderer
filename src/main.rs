@@ -1,11 +1,13 @@
 mod program;
 mod shader;
+mod vertex;
 
 use anyhow::Result;
 
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 use program::Program;
 use shader::Shader;
+use vertex::Vertex;
 
 fn main() -> Result<()> {
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
@@ -40,7 +42,11 @@ fn main() -> Result<()> {
 
     // VAO & VBO
 
-    let vertices: [f32; 9] = [-0.5, -0.5, 0.0, 0.5, -0.5, 0.0, 0.0, 0.5, 0.0];
+    let vertices: [Vertex; 3] = [
+        Vertex::new(-0.5, -0.5, 0.0),
+        Vertex::new(0.5, -0.5, 0.0),
+        Vertex::new(0.0, 0.5, 0.0),
+    ];
 
     let mut vertex_array_object = 0;
     unsafe { gl::GenVertexArrays(1, &mut vertex_array_object) };
@@ -53,7 +59,7 @@ fn main() -> Result<()> {
         gl::BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
         gl::BufferData(
             gl::ARRAY_BUFFER,
-            std::mem::size_of_val(&vertices) as isize,
+            (std::mem::size_of::<Vertex>() * vertices.len()) as isize,
             vertices.as_ptr().cast(),
             gl::STATIC_DRAW,
         );
