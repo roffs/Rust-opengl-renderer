@@ -1,12 +1,14 @@
+mod camera;
 mod program;
 mod shader;
 mod texture;
 mod vertex;
 
 use anyhow::Result;
-
 use cgmath::{Matrix4, Vector3};
 use glfw::{Context, OpenGlProfileHint, WindowHint};
+
+use camera::Camera;
 use program::Program;
 use shader::Shader;
 use texture::Texture;
@@ -97,13 +99,21 @@ fn main() -> Result<()> {
     let uniform_model_location = shader_program.get_uniform_location("model")?;
     shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
 
-    let view = Matrix4::from_translation(Vector3::new(0.0, 0.0, -5.0));
-    let uniform_view_location = shader_program.get_uniform_location("view")?;
-    shader_program.set_uniform_matrix_4fv(uniform_view_location, view);
+    let camera = Camera::new(
+        (0.0, 0.0, 3.0),
+        (0.0, 0.0, 0.0),
+        (0.0, 1.0, 0.0),
+        45.0,
+        (WIDTH / HEIGHT) as f32,
+        0.1,
+        100.0,
+    );
 
-    let projection = cgmath::perspective(cgmath::Deg(45.0), (WIDTH / HEIGHT) as f32, 0.1, 100.0);
+    let uniform_view_location = shader_program.get_uniform_location("view")?;
+    shader_program.set_uniform_matrix_4fv(uniform_view_location, camera.get_view());
+
     let uniform_projection_location = shader_program.get_uniform_location("projection")?;
-    shader_program.set_uniform_matrix_4fv(uniform_projection_location, projection);
+    shader_program.set_uniform_matrix_4fv(uniform_projection_location, camera.get_projection());
 
     // TEXTURE
 
