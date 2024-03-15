@@ -85,6 +85,11 @@ fn main() -> Result<()> {
         gl.EnableVertexAttribArray(0);
     }
 
+    // SET UNIFORMS
+
+    let uniform_color_location = shader_program.get_uniform_location("ourColor")?;
+    shader_program.set_uniform_4f(uniform_color_location, (0.0, 1.0, 0.0, 1.0));
+
     // TEXTURE
 
     let texture = Texture::load(&gl, "src/textures/texture.png")?;

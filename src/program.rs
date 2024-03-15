@@ -49,4 +49,31 @@ impl Program {
     pub fn use_program(&self) {
         unsafe { self.gl.UseProgram(self.id) };
     }
+
+    pub fn get_uniform_location(&self, name: &str) -> Result<gl::types::GLint> {
+        let uniform_cname =
+            std::ffi::CString::new(name).expect("expected uniform name to have no nul bytes");
+
+        let location = unsafe {
+            self.gl
+                .GetUniformLocation(self.id, uniform_cname.as_ptr().cast())
+        };
+
+        if location == -1 {
+            bail!(
+                "Uniform location \"{}\" was not found in program with id {}",
+                name,
+                self.id
+            )
+        }
+
+        Ok(location)
+    }
+
+    pub fn set_uniform_4f(&self, location: gl::types::GLint, value: (f32, f32, f32, f32)) {
+        unsafe {
+            self.gl
+                .Uniform4f(location, value.0, value.1, value.2, value.3)
+        };
+    }
 }
