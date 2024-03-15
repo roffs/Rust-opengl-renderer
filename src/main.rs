@@ -16,6 +16,7 @@ use vertex::Vertex;
 
 const WIDTH: u32 = 1080;
 const HEIGHT: u32 = 720;
+
 fn main() -> Result<()> {
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
 
@@ -47,17 +48,23 @@ fn main() -> Result<()> {
 
     // VAO & VBO
 
-    let vertices: [Vertex; 3] = [
+    let vertices = [
         Vertex::new((-0.5, -0.5, 0.0), (0.0, 0.0)),
         Vertex::new((0.5, -0.5, 0.0), (1.0, 0.0)),
-        Vertex::new((0.0, 0.5, 0.0), (0.5, 1.0)),
+        Vertex::new((0.5, 0.5, 0.0), (1.0, 1.0)),
+        Vertex::new((-0.5, 0.5, 0.0), (0.0, 1.0)),
     ];
+
+    let indices = [0, 1, 2, 0, 2, 3];
 
     let mut vertex_array_object = 0;
     unsafe { gl.GenVertexArrays(1, &mut vertex_array_object) };
 
     let mut vertex_buffer = 0;
     unsafe { gl.GenBuffers(1, &mut vertex_buffer) };
+
+    let mut index_buffer = 0;
+    unsafe { gl.GenBuffers(1, &mut index_buffer) };
 
     unsafe {
         gl.BindVertexArray(vertex_array_object);
@@ -66,6 +73,14 @@ fn main() -> Result<()> {
             gl::ARRAY_BUFFER,
             (std::mem::size_of::<Vertex>() * vertices.len()) as isize,
             vertices.as_ptr().cast(),
+            gl::STATIC_DRAW,
+        );
+
+        gl.BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer);
+        gl.BufferData(
+            gl::ELEMENT_ARRAY_BUFFER,
+            (std::mem::size_of::<i32>() * indices.len()) as isize,
+            indices.as_ptr().cast(),
             gl::STATIC_DRAW,
         );
 
@@ -127,7 +142,12 @@ fn main() -> Result<()> {
             gl.ClearColor(0.3, 0.4, 0.6, 1.0);
             gl.Clear(gl::COLOR_BUFFER_BIT);
 
-            gl.DrawArrays(gl::TRIANGLES, 0, 3);
+            gl.DrawElements(
+                gl::TRIANGLES,
+                indices.len() as i32,
+                gl::UNSIGNED_INT,
+                std::ptr::null(),
+            );
         }
 
         process_input(&mut window);
