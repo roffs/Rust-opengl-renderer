@@ -99,21 +99,15 @@ fn main() -> Result<()> {
     let uniform_model_location = shader_program.get_uniform_location("model")?;
     shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
 
-    let camera = Camera::new(
+    let mut camera = Camera::new(
         (0.0, 0.0, 3.0),
-        (0.0, 0.0, 0.0),
+        (0.0, 0.0, -1.0),
         (0.0, 1.0, 0.0),
         45.0,
         (WIDTH / HEIGHT) as f32,
         0.1,
         100.0,
     );
-
-    let uniform_view_location = shader_program.get_uniform_location("view")?;
-    shader_program.set_uniform_matrix_4fv(uniform_view_location, camera.get_view());
-
-    let uniform_projection_location = shader_program.get_uniform_location("projection")?;
-    shader_program.set_uniform_matrix_4fv(uniform_projection_location, camera.get_projection());
 
     // TEXTURE
 
@@ -123,6 +117,12 @@ fn main() -> Result<()> {
     // EVENT LOOP
 
     while !window.should_close() {
+        let uniform_view_location = shader_program.get_uniform_location("view")?;
+        shader_program.set_uniform_matrix_4fv(uniform_view_location, camera.get_view());
+
+        let uniform_projection_location = shader_program.get_uniform_location("projection")?;
+        shader_program.set_uniform_matrix_4fv(uniform_projection_location, camera.get_projection());
+
         unsafe {
             gl.ClearColor(0.3, 0.4, 0.6, 1.0);
             gl.Clear(gl::COLOR_BUFFER_BIT);
@@ -136,8 +136,23 @@ fn main() -> Result<()> {
         window.swap_buffers();
 
         for (_, event) in glfw::flush_messages(&events) {
-            if let glfw::WindowEvent::Key(glfw::Key::Escape, _, glfw::Action::Press, _) = event {
-                window.set_should_close(true);
+            match event {
+                glfw::WindowEvent::Key(glfw::Key::Escape, _, glfw::Action::Press, _) => {
+                    window.set_should_close(true)
+                }
+                glfw::WindowEvent::Key(glfw::Key::A, _, glfw::Action::Press, _) => {
+                    camera.position.0 -= 0.1;
+                }
+                glfw::WindowEvent::Key(glfw::Key::D, _, glfw::Action::Press, _) => {
+                    camera.position.0 += 0.1;
+                }
+                glfw::WindowEvent::Key(glfw::Key::W, _, glfw::Action::Press, _) => {
+                    camera.position.1 += 0.1;
+                }
+                glfw::WindowEvent::Key(glfw::Key::S, _, glfw::Action::Press, _) => {
+                    camera.position.1 -= 0.1;
+                }
+                _ => {}
             }
         }
     }

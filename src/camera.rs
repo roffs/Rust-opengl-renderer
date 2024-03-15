@@ -1,7 +1,7 @@
 use cgmath::{perspective, Deg, Matrix4};
 
 pub struct Camera {
-    position: (f32, f32, f32),
+    pub position: (f32, f32, f32),
     direction: (f32, f32, f32),
     up: (f32, f32, f32),
     fovy: f32,
@@ -32,7 +32,7 @@ impl Camera {
     }
 
     pub fn get_view(&self) -> cgmath::Matrix4<f32> {
-        Matrix4::look_at_rh(self.position.into(), self.direction.into(), self.up.into())
+        Matrix4::look_to_rh(self.position.into(), self.direction.into(), self.up.into())
     }
 
     pub fn get_projection(&self) -> cgmath::Matrix4<f32> {
