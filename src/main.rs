@@ -5,12 +5,15 @@ mod vertex;
 
 use anyhow::Result;
 
+use cgmath::{Matrix4, Vector3};
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 use program::Program;
 use shader::Shader;
 use texture::Texture;
 use vertex::Vertex;
 
+const WIDTH: u32 = 1080;
+const HEIGHT: u32 = 720;
 fn main() -> Result<()> {
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
 
@@ -20,8 +23,8 @@ fn main() -> Result<()> {
 
     let (mut window, events) = glfw
         .create_window(
-            1080,
-            720,
+            WIDTH,
+            HEIGHT,
             "OpenGL Rust Renderer",
             glfw::WindowMode::Windowed,
         )
@@ -89,6 +92,18 @@ fn main() -> Result<()> {
 
     let uniform_color_location = shader_program.get_uniform_location("ourColor")?;
     shader_program.set_uniform_4f(uniform_color_location, (0.0, 1.0, 0.0, 1.0));
+
+    let model = Matrix4::from_translation(Vector3::new(0.2, 0.2, 0.2));
+    let uniform_model_location = shader_program.get_uniform_location("model")?;
+    shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
+
+    let view = Matrix4::from_translation(Vector3::new(0.0, 0.0, -5.0));
+    let uniform_view_location = shader_program.get_uniform_location("view")?;
+    shader_program.set_uniform_matrix_4fv(uniform_view_location, view);
+
+    let projection = cgmath::perspective(cgmath::Deg(45.0), (WIDTH / HEIGHT) as f32, 0.1, 100.0);
+    let uniform_projection_location = shader_program.get_uniform_location("projection")?;
+    shader_program.set_uniform_matrix_4fv(uniform_projection_location, projection);
 
     // TEXTURE
 

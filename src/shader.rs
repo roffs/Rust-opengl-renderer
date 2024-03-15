@@ -13,6 +13,9 @@ impl Shader {
         let shader_source =
             std::fs::read_to_string(file_path).expect("Should have been able to read the file");
 
+        let shader_source = &std::ffi::CString::new(shader_source)
+            .expect("expected uniform name to have no nul bytes")[..];
+
         let shader_id = unsafe { gl.CreateShader(kind) };
 
         let shader_type = match kind {
@@ -22,12 +25,7 @@ impl Shader {
         };
 
         unsafe {
-            gl.ShaderSource(
-                shader_id,
-                1,
-                &shader_source.as_bytes().as_ptr().cast(),
-                std::ptr::null(),
-            );
+            gl.ShaderSource(shader_id, 1, &shader_source.as_ptr(), std::ptr::null());
             gl.CompileShader(shader_id);
         }
 

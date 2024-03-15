@@ -1,4 +1,5 @@
 use anyhow::{bail, Result};
+use cgmath::Matrix;
 
 use crate::shader::Shader;
 
@@ -74,6 +75,13 @@ impl Program {
         unsafe {
             self.gl
                 .Uniform4f(location, value.0, value.1, value.2, value.3)
+        };
+    }
+
+    pub fn set_uniform_matrix_4fv(&self, location: gl::types::GLint, value: cgmath::Matrix4<f32>) {
+        unsafe {
+            self.gl
+                .UniformMatrix4fv(location, 1, gl::FALSE, value.as_ptr().cast())
         };
     }
 }
