@@ -43,8 +43,11 @@ impl Texture {
         Ok(Texture { gl: gl.clone(), id })
     }
 
-    pub fn bind(&self) {
-        unsafe { self.gl.BindTexture(gl::TEXTURE_2D, self.id) };
+    pub fn bind(&self, slot: gl::types::GLenum) {
+        unsafe {
+            self.gl.ActiveTexture(slot);
+            self.gl.BindTexture(gl::TEXTURE_2D, self.id)
+        };
     }
 }
 
