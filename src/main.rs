@@ -106,11 +106,8 @@ fn main() -> Result<()> {
         window.swap_buffers();
 
         for (_, event) in glfw::flush_messages(&events) {
-            match event {
-                glfw::WindowEvent::Key(glfw::Key::Escape, _, glfw::Action::Press, _) => {
-                    window.set_should_close(true)
-                }
-                _ => {}
+            if let glfw::WindowEvent::Key(glfw::Key::Escape, _, glfw::Action::Press, _) = event {
+                window.set_should_close(true);
             }
         }
     }
