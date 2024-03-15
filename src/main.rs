@@ -150,8 +150,6 @@ fn main() -> Result<()> {
             );
         }
 
-        process_input(&mut window);
-
         glfw.poll_events();
         window.swap_buffers();
 
@@ -178,10 +176,4 @@ fn main() -> Result<()> {
     }
 
     Ok(())
-}
-
-fn process_input(window: &mut glfw::Window) {
-    if window.get_key(glfw::Key::Escape) == glfw::Action::Press {
-        window.set_should_close(true);
-    }
 }
