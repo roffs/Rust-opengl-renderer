@@ -1,9 +1,9 @@
-use cgmath::{perspective, Deg, Matrix4};
+use cgmath::{perspective, Deg, InnerSpace, Matrix4, Point3, Vector3};
 
 pub struct Camera {
-    pub position: (f32, f32, f32),
-    direction: (f32, f32, f32),
-    up: (f32, f32, f32),
+    pub position: Point3<f32>,
+    direction: Vector3<f32>,
+    up: Vector3<f32>,
     fovy: f32,
     aspect: f32,
     near: f32,
@@ -21,9 +21,9 @@ impl Camera {
         far: f32,
     ) -> Camera {
         Camera {
-            position,
-            direction,
-            up,
+            position: Point3::from(position),
+            direction: Vector3::from(direction).normalize(),
+            up: Vector3::from(up).normalize(),
             fovy,
             aspect,
             near,
@@ -32,7 +32,7 @@ impl Camera {
     }
 
     pub fn get_view(&self) -> cgmath::Matrix4<f32> {
-        Matrix4::look_to_rh(self.position.into(), self.direction.into(), self.up.into())
+        Matrix4::look_to_rh(self.position, self.direction, self.up)
     }
 
     pub fn get_projection(&self) -> cgmath::Matrix4<f32> {

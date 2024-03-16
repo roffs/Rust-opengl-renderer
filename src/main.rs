@@ -49,13 +49,46 @@ fn main() -> Result<()> {
     // VAO & VBO
 
     let vertices = [
-        Vertex::new((-0.5, -0.5, 0.0), (0.0, 0.0)),
-        Vertex::new((0.5, -0.5, 0.0), (1.0, 0.0)),
-        Vertex::new((0.5, 0.5, 0.0), (1.0, 1.0)),
-        Vertex::new((-0.5, 0.5, 0.0), (0.0, 1.0)),
+        // Front
+        Vertex::new((-0.5, -0.5, 0.5), (0.0, 0.0)),
+        Vertex::new((0.5, -0.5, 0.5), (1.0, 0.0)),
+        Vertex::new((0.5, 0.5, 0.5), (1.0, 1.0)),
+        Vertex::new((-0.5, 0.5, 0.5), (0.0, 1.0)),
+        // Back
+        Vertex::new((-0.5, -0.5, -0.5), (0.0, 0.0)),
+        Vertex::new((0.5, -0.5, -0.5), (1.0, 0.0)),
+        Vertex::new((0.5, 0.5, -0.5), (1.0, 1.0)),
+        Vertex::new((-0.5, 0.5, -0.5), (0.0, 1.0)),
+        // Left
+        Vertex::new((-0.5, -0.5, -0.5), (0.0, 0.0)),
+        Vertex::new((-0.5, -0.5, 0.5), (1.0, 0.0)),
+        Vertex::new((-0.5, 0.5, 0.5), (1.0, 1.0)),
+        Vertex::new((-0.5, 0.5, -0.5), (0.0, 1.0)),
+        // Right
+        Vertex::new((0.5, -0.5, -0.5), (0.0, 0.0)),
+        Vertex::new((0.5, -0.5, 0.5), (1.0, 0.0)),
+        Vertex::new((0.5, 0.5, 0.5), (1.0, 1.0)),
+        Vertex::new((0.5, 0.5, -0.5), (0.0, 1.0)),
+        // Top
+        Vertex::new((-0.5, 0.5, 0.5), (0.0, 0.0)),
+        Vertex::new((0.5, 0.5, 0.5), (1.0, 0.0)),
+        Vertex::new((0.5, 0.5, -0.5), (1.0, 1.0)),
+        Vertex::new((-0.5, 0.5, -0.5), (0.0, 1.0)),
+        // Bottom
+        Vertex::new((-0.5, -0.5, 0.5), (0.0, 0.0)),
+        Vertex::new((0.5, -0.5, 0.5), (1.0, 0.0)),
+        Vertex::new((0.5, -0.5, -0.5), (1.0, 1.0)),
+        Vertex::new((-0.5, -0.5, -0.5), (0.0, 1.0)),
     ];
 
-    let indices = [0, 1, 2, 0, 2, 3];
+    let indices = [
+        0, 1, 2, 0, 2, 3, // Front
+        4, 7, 6, 4, 6, 5, // Back
+        8, 9, 10, 8, 10, 11, // Left
+        12, 15, 14, 12, 14, 13, // Right
+        16, 17, 18, 16, 18, 19, // Top
+        20, 23, 22, 20, 22, 21, // Bottom
+    ];
 
     let mut vertex_array_object = 0;
     unsafe { gl.GenVertexArrays(1, &mut vertex_array_object) };
@@ -115,8 +148,8 @@ fn main() -> Result<()> {
     shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
 
     let mut camera = Camera::new(
-        (0.0, 0.0, 3.0),
-        (0.0, 0.0, -1.0),
+        (0.0, 3.0, 3.0),
+        (0.0, -1.0, -1.0),
         (0.0, 1.0, 0.0),
         45.0,
         WIDTH as f32 / HEIGHT as f32,
@@ -159,16 +192,16 @@ fn main() -> Result<()> {
                     window.set_should_close(true)
                 }
                 glfw::WindowEvent::Key(glfw::Key::A, _, glfw::Action::Press, _) => {
-                    camera.position.0 -= 0.1;
+                    camera.position.x -= 0.1;
                 }
                 glfw::WindowEvent::Key(glfw::Key::D, _, glfw::Action::Press, _) => {
-                    camera.position.0 += 0.1;
+                    camera.position.x += 0.1;
                 }
                 glfw::WindowEvent::Key(glfw::Key::W, _, glfw::Action::Press, _) => {
-                    camera.position.1 += 0.1;
+                    camera.position.y += 0.1;
                 }
                 glfw::WindowEvent::Key(glfw::Key::S, _, glfw::Action::Press, _) => {
-                    camera.position.1 -= 0.1;
+                    camera.position.y -= 0.1;
                 }
                 _ => {}
             }
