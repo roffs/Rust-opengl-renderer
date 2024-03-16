@@ -119,7 +119,7 @@ fn main() -> Result<()> {
         (0.0, 0.0, -1.0),
         (0.0, 1.0, 0.0),
         45.0,
-        (WIDTH / HEIGHT) as f32,
+        WIDTH as f32 / HEIGHT as f32,
         0.1,
         100.0,
     );
