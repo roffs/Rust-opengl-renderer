@@ -1,4 +1,5 @@
 mod camera;
+mod cube;
 mod program;
 mod shader;
 mod texture;
@@ -6,13 +7,13 @@ mod vertex;
 
 use anyhow::Result;
 use cgmath::{Matrix4, Vector3};
+use cube::Cube;
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 
 use camera::Camera;
 use program::Program;
 use shader::Shader;
 use texture::Texture;
-use vertex::Vertex;
 
 const WIDTH: u32 = 1080;
 const HEIGHT: u32 = 720;
@@ -46,98 +47,6 @@ fn main() -> Result<()> {
     let shader_program = Program::from_shaders(&gl, &[vertex_shader, fragment_shader])?;
     shader_program.use_program();
 
-    // VAO & VBO
-
-    let vertices = [
-        // Front
-        Vertex::new((-0.5, -0.5, 0.5), (0.0, 0.0)),
-        Vertex::new((0.5, -0.5, 0.5), (1.0, 0.0)),
-        Vertex::new((0.5, 0.5, 0.5), (1.0, 1.0)),
-        Vertex::new((-0.5, 0.5, 0.5), (0.0, 1.0)),
-        // Back
-        Vertex::new((-0.5, -0.5, -0.5), (0.0, 0.0)),
-        Vertex::new((0.5, -0.5, -0.5), (1.0, 0.0)),
-        Vertex::new((0.5, 0.5, -0.5), (1.0, 1.0)),
-        Vertex::new((-0.5, 0.5, -0.5), (0.0, 1.0)),
-        // Left
-        Vertex::new((-0.5, -0.5, -0.5), (0.0, 0.0)),
-        Vertex::new((-0.5, -0.5, 0.5), (1.0, 0.0)),
-        Vertex::new((-0.5, 0.5, 0.5), (1.0, 1.0)),
-        Vertex::new((-0.5, 0.5, -0.5), (0.0, 1.0)),
-        // Right
-        Vertex::new((0.5, -0.5, -0.5), (0.0, 0.0)),
-        Vertex::new((0.5, -0.5, 0.5), (1.0, 0.0)),
-        Vertex::new((0.5, 0.5, 0.5), (1.0, 1.0)),
-        Vertex::new((0.5, 0.5, -0.5), (0.0, 1.0)),
-        // Top
-        Vertex::new((-0.5, 0.5, 0.5), (0.0, 0.0)),
-        Vertex::new((0.5, 0.5, 0.5), (1.0, 0.0)),
-        Vertex::new((0.5, 0.5, -0.5), (1.0, 1.0)),
-        Vertex::new((-0.5, 0.5, -0.5), (0.0, 1.0)),
-        // Bottom
-        Vertex::new((-0.5, -0.5, 0.5), (0.0, 0.0)),
-        Vertex::new((0.5, -0.5, 0.5), (1.0, 0.0)),
-        Vertex::new((0.5, -0.5, -0.5), (1.0, 1.0)),
-        Vertex::new((-0.5, -0.5, -0.5), (0.0, 1.0)),
-    ];
-
-    let indices = [
-        0, 1, 2, 0, 2, 3, // Front
-        4, 7, 6, 4, 6, 5, // Back
-        8, 9, 10, 8, 10, 11, // Left
-        12, 15, 14, 12, 14, 13, // Right
-        16, 17, 18, 16, 18, 19, // Top
-        20, 23, 22, 20, 22, 21, // Bottom
-    ];
-
-    let mut vertex_array_object = 0;
-    unsafe { gl.GenVertexArrays(1, &mut vertex_array_object) };
-
-    let mut vertex_buffer = 0;
-    unsafe { gl.GenBuffers(1, &mut vertex_buffer) };
-
-    let mut index_buffer = 0;
-    unsafe { gl.GenBuffers(1, &mut index_buffer) };
-
-    unsafe {
-        gl.BindVertexArray(vertex_array_object);
-        gl.BindBuffer(gl::ARRAY_BUFFER, vertex_buffer);
-        gl.BufferData(
-            gl::ARRAY_BUFFER,
-            (std::mem::size_of::<Vertex>() * vertices.len()) as isize,
-            vertices.as_ptr().cast(),
-            gl::STATIC_DRAW,
-        );
-
-        gl.BindBuffer(gl::ELEMENT_ARRAY_BUFFER, index_buffer);
-        gl.BufferData(
-            gl::ELEMENT_ARRAY_BUFFER,
-            (std::mem::size_of::<i32>() * indices.len()) as isize,
-            indices.as_ptr().cast(),
-            gl::STATIC_DRAW,
-        );
-
-        gl.VertexAttribPointer(
-            0,
-            3,
-            gl::FLOAT,
-            gl::FALSE,
-            5 * std::mem::size_of::<f32>() as i32,
-            std::ptr::null(),
-        );
-        gl.VertexAttribPointer(
-            1,
-            2,
-            gl::FLOAT,
-            gl::FALSE,
-            5 * std::mem::size_of::<f32>() as i32,
-            (3 * std::mem::size_of::<f32>()) as *const _,
-        );
-        gl.EnableVertexAttribArray(1);
-
-        gl.EnableVertexAttribArray(0);
-    }
-
     // SET UNIFORMS
 
     let uniform_color_location = shader_program.get_uniform_location("ourColor")?;
@@ -157,12 +66,13 @@ fn main() -> Result<()> {
         100.0,
     );
 
-    // TEXTURE
+    // CUBE
 
     let texture = Texture::load(&gl, "src/textures/texture.png")?;
-    texture.bind(gl::TEXTURE0);
+    let cube = Cube::new(&gl, texture);
 
     // ENABLE DEPTH TESTING
+
     unsafe { gl.Enable(gl::DEPTH_TEST) };
 
     // EVENT LOOP
@@ -178,12 +88,7 @@ fn main() -> Result<()> {
             gl.ClearColor(0.3, 0.4, 0.6, 1.0);
             gl.Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-            gl.DrawElements(
-                gl::TRIANGLES,
-                indices.len() as i32,
-                gl::UNSIGNED_INT,
-                std::ptr::null(),
-            );
+            cube.draw();
         }
 
         glfw.poll_events();

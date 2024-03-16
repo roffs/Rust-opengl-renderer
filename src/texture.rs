@@ -49,6 +49,12 @@ impl Texture {
             self.gl.BindTexture(gl::TEXTURE_2D, self.id)
         };
     }
+
+    pub fn unbind(&self) {
+        unsafe {
+            self.gl.BindTexture(gl::TEXTURE_2D, 0);
+        }
+    }
 }
 
 impl Drop for Texture {
