@@ -162,6 +162,9 @@ fn main() -> Result<()> {
     let texture = Texture::load(&gl, "src/textures/texture.png")?;
     texture.bind(gl::TEXTURE0);
 
+    // ENABLE DEPTH TESTING
+    unsafe { gl.Enable(gl::DEPTH_TEST) };
+
     // EVENT LOOP
 
     while !window.should_close() {
@@ -173,7 +176,7 @@ fn main() -> Result<()> {
 
         unsafe {
             gl.ClearColor(0.3, 0.4, 0.6, 1.0);
-            gl.Clear(gl::COLOR_BUFFER_BIT);
+            gl.Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
             gl.DrawElements(
                 gl::TRIANGLES,
