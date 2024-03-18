@@ -12,3 +12,6 @@ gl = { path = "gl" }
 glfw = "0.55.0"
 anyhow = "1.0.81"
 image = "0.25.0"
+
+[build-dependencies]
+fs_extra = "1.2"

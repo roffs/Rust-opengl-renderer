@@ -1,9 +1,12 @@
 mod camera;
 mod cube;
 mod program;
+mod resources;
 mod shader;
 mod texture;
 mod vertex;
+
+use std::path::Path;
 
 use cgmath::{Matrix4, Vector3};
 use cube::Cube;
@@ -11,6 +14,7 @@ use glfw::{Context, OpenGlProfileHint, WindowHint};
 
 use camera::Camera;
 use program::Program;
+use resources::ResourceLoader;
 use shader::Shader;
 use texture::Texture;
 
@@ -18,6 +22,7 @@ const WIDTH: u32 = 1080;
 const HEIGHT: u32 = 720;
 
 pub fn run() -> anyhow::Result<()> {
+    // INITIALIZE GRAPHICS AND WINDOW CONTEXT
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
 
     glfw.window_hint(WindowHint::ContextVersion(4, 6));
@@ -36,12 +41,16 @@ pub fn run() -> anyhow::Result<()> {
     window.make_current();
     window.set_key_polling(true);
 
+    // INIT RESOURCES LOADER
+
+    let resources = ResourceLoader::from_relative_exe_path(Path::new("")).unwrap();
+
     let gl = gl::Gl::load_with(|s| window.get_proc_address(s) as *const _);
 
     // SHADER PROGRAM
 
-    let vertex_shader = Shader::from_vertex_source(&gl, "src/shaders/shader.vert")?;
-    let fragment_shader = Shader::from_fragment_source(&gl, "src/shaders/shader.frag")?;
+    let vertex_shader = Shader::from_vertex_source(&gl, &resources, "shaders/shader.vert")?;
+    let fragment_shader = Shader::from_fragment_source(&gl, &resources, "shaders/shader.frag")?;
 
     let shader_program = Program::from_shaders(&gl, &[vertex_shader, fragment_shader])?;
     shader_program.use_program();

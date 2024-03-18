@@ -1,4 +1,6 @@
 use anyhow::{bail, Result};
+
+use crate::resources::ResourceLoader;
 pub struct Shader {
     gl: gl::Gl,
     id: gl::types::GLuint,
@@ -9,12 +11,16 @@ impl Shader {
         self.id
     }
 
-    pub fn from_source(gl: &gl::Gl, file_path: &str, kind: gl::types::GLenum) -> Result<Shader> {
-        let shader_source =
-            std::fs::read_to_string(file_path).expect("Should have been able to read the file");
-
-        let shader_source = &std::ffi::CString::new(shader_source)
-            .expect("expected uniform name to have no nul bytes")[..];
+    pub fn from_source(
+        gl: &gl::Gl,
+        res: &ResourceLoader,
+        file_path: &str,
+        kind: gl::types::GLenum,
+    ) -> Result<Shader> {
+        let source = res
+            .load_cstring(file_path)
+            .map_err(|e| format!("Error loading resource {}: {:?}", file_path, e))
+            .unwrap();
 
         let shader_id = unsafe { gl.CreateShader(kind) };
 
@@ -25,7 +31,7 @@ impl Shader {
         };
 
         unsafe {
-            gl.ShaderSource(shader_id, 1, &shader_source.as_ptr(), std::ptr::null());
+            gl.ShaderSource(shader_id, 1, &source.as_ptr(), std::ptr::null());
             gl.CompileShader(shader_id);
         }
 
@@ -58,12 +64,20 @@ impl Shader {
         })
     }
 
-    pub fn from_vertex_source(gl: &gl::Gl, file_path: &str) -> Result<Shader> {
-        Shader::from_source(gl, file_path, gl::VERTEX_SHADER)
+    pub fn from_vertex_source(
+        gl: &gl::Gl,
+        res: &ResourceLoader,
+        file_path: &str,
+    ) -> Result<Shader> {
+        Shader::from_source(gl, res, file_path, gl::VERTEX_SHADER)
     }
 
-    pub fn from_fragment_source(gl: &gl::Gl, file_path: &str) -> Result<Shader> {
-        Shader::from_source(gl, file_path, gl::FRAGMENT_SHADER)
+    pub fn from_fragment_source(
+        gl: &gl::Gl,
+        res: &ResourceLoader,
+        file_path: &str,
+    ) -> Result<Shader> {
+        Shader::from_source(gl, res, file_path, gl::FRAGMENT_SHADER)
     }
 }
 
