@@ -1,6 +1,5 @@
 mod camera;
 mod cube;
-mod program;
 mod resources;
 mod shader;
 mod texture;
@@ -13,9 +12,8 @@ use cube::Cube;
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 
 use camera::Camera;
-use program::Program;
 use resources::ResourceLoader;
-use shader::Shader;
+use shader::{Program, Shader};
 use texture::Texture;
 
 const WIDTH: u32 = 1080;
