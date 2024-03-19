@@ -1,15 +1,14 @@
 mod camera;
-mod cube;
+mod mesh;
 mod resources;
 mod shader;
 mod texture;
-mod vertex;
 
 use std::path::Path;
 
 use cgmath::{Matrix4, Vector3};
-use cube::Cube;
 use glfw::{Context, OpenGlProfileHint, WindowHint};
+use mesh::Mesh;
 
 use camera::Camera;
 use resources::ResourceLoader;
@@ -21,6 +20,7 @@ const HEIGHT: u32 = 720;
 
 pub fn run() -> anyhow::Result<()> {
     // INITIALIZE GRAPHICS AND WINDOW CONTEXT
+
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
 
     glfw.window_hint(WindowHint::ContextVersion(4, 6));
@@ -76,7 +76,7 @@ pub fn run() -> anyhow::Result<()> {
     // CUBE
 
     let texture = Texture::load(&gl, &resources, "assets/textures/texture.png")?;
-    let cube = Cube::new(&gl, texture);
+    let cube = Mesh::create_cube(&gl, texture);
 
     // ENABLE DEPTH TESTING
 
