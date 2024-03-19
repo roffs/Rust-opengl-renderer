@@ -1,21 +1,21 @@
 use fs_extra::copy_items;
 use fs_extra::dir::CopyOptions;
 use std::env;
-use std::fs::read_dir;
+use std::path::PathBuf;
 
 fn main() {
-    println!("cargo:rerun-if-changed=res/*");
+    // Get current assets directory from the root
+    let directory_to_copy = "assets";
 
-    let out_dir = env::var("OUT_DIR").unwrap();
+    // Request the output directory
+    let out = env::var("PROFILE").unwrap();
+    let out = PathBuf::from(format!("target/{}", out));
+
+    // Iterate over all files & directories in assets
+    let paths_to_copy = vec![directory_to_copy];
 
     let copy_options = CopyOptions::new().overwrite(true);
-    let mut paths_to_copy = Vec::new();
-
-    let paths = read_dir("assets").unwrap();
-
-    for path in paths {
-        paths_to_copy.push(path.unwrap().path())
-    }
-
-    copy_items(&paths_to_copy, out_dir, &copy_options).unwrap();
+    println!("OUT: {:?}", out);
+    println!("PATHS_TO_COPY: {:?}", paths_to_copy);
+    copy_items(&paths_to_copy, out, &copy_options).unwrap();
 }

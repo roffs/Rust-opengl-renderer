@@ -27,10 +27,11 @@ pub struct ResourceLoader {
 
 impl ResourceLoader {
     pub fn from_relative_exe_path(rel_path: &Path) -> Result<ResourceLoader, Error> {
-        let path = std::path::Path::new(env!("OUT_DIR"));
+        let exe_file_name = ::std::env::current_exe().map_err(|_| Error::FailedToGetExePath)?;
+        let exe_path = exe_file_name.parent().ok_or(Error::FailedToGetExePath)?;
 
         Ok(ResourceLoader {
-            root_path: path.join(rel_path),
+            root_path: exe_path.join(rel_path),
         })
     }
 

@@ -49,8 +49,9 @@ pub fn run() -> anyhow::Result<()> {
 
     // SHADER PROGRAM
 
-    let vertex_shader = Shader::from_vertex_source(&gl, &resources, "shaders/shader.vert")?;
-    let fragment_shader = Shader::from_fragment_source(&gl, &resources, "shaders/shader.frag")?;
+    let vertex_shader = Shader::from_vertex_source(&gl, &resources, "assets/shaders/shader.vert")?;
+    let fragment_shader =
+        Shader::from_fragment_source(&gl, &resources, "assets/shaders/shader.frag")?;
 
     let shader_program = Program::from_shaders(&gl, &[vertex_shader, fragment_shader])?;
     shader_program.use_program();
