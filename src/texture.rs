@@ -1,5 +1,6 @@
 use anyhow::Result;
-use image::io::Reader;
+
+use crate::resources::ResourceLoader;
 
 pub struct Texture {
     gl: gl::Gl,
@@ -7,8 +8,8 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn load(gl: &gl::Gl, path: &str) -> Result<Texture> {
-        let img = Reader::open(path)?.decode()?.flipv().to_rgba8();
+    pub fn load(gl: &gl::Gl, res: &ResourceLoader, path: &str) -> Result<Texture> {
+        let img = res.load_image(path).unwrap();
 
         let mut id: gl::types::GLuint = 0;
         unsafe { gl.GenTextures(1, &mut id) };

@@ -3,11 +3,15 @@ use std::fs;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
+use image::ImageBuffer;
+use image::{io::Reader, ImageError};
+
 #[derive(Debug)]
 pub enum Error {
     Io(io::Error),
-    FileContainsNil,
+    FileContainsNil(std::ffi::NulError),
     FailedToGetExePath,
+    FailedToDecodeImage(ImageError),
 }
 
 impl From<io::Error> for Error {
@@ -16,8 +20,14 @@ impl From<io::Error> for Error {
     }
 }
 impl From<std::ffi::NulError> for Error {
-    fn from(_: std::ffi::NulError) -> Self {
-        Error::FileContainsNil
+    fn from(other: std::ffi::NulError) -> Self {
+        Error::FileContainsNil(other)
+    }
+}
+
+impl From<ImageError> for Error {
+    fn from(other: ImageError) -> Self {
+        Error::FailedToDecodeImage(other)
     }
 }
 
@@ -35,8 +45,11 @@ impl ResourceLoader {
         })
     }
 
-    pub fn load_cstring(&self, resource_name: &str) -> Result<ffi::CString, Error> {
-        let mut file = fs::File::open(resource_name_to_path(&self.root_path, resource_name))?;
+    pub fn load_cstring(&self, resource_path: &str) -> Result<ffi::CString, Error> {
+        let mut file = fs::File::open(relative_to_absolute_resource_path(
+            &self.root_path,
+            resource_path,
+        ))?;
 
         // allocate buffer of the same size as file
         let mut buffer: Vec<u8> = Vec::with_capacity(file.metadata()?.len() as usize + 1);
@@ -46,9 +59,19 @@ impl ResourceLoader {
 
         Ok(result)
     }
+
+    pub fn load_image(
+        &self,
+        resource_path: &str,
+    ) -> Result<ImageBuffer<image::Rgba<u8>, Vec<u8>>, Error> {
+        let absolute_path = relative_to_absolute_resource_path(&self.root_path, resource_path);
+        let img = Reader::open(absolute_path)?.decode()?.flipv().to_rgba8();
+
+        Ok(img)
+    }
 }
 
-fn resource_name_to_path(root_dir: &Path, location: &str) -> PathBuf {
+fn relative_to_absolute_resource_path(root_dir: &Path, location: &str) -> PathBuf {
     let mut path: PathBuf = root_dir.into();
 
     for part in location.split('/') {

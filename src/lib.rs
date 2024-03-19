@@ -77,7 +77,7 @@ pub fn run() -> anyhow::Result<()> {
 
     // CUBE
 
-    let texture = Texture::load(&gl, "src/textures/texture.png")?;
+    let texture = Texture::load(&gl, &resources, "assets/textures/texture.png")?;
     let cube = Cube::new(&gl, texture);
 
     // ENABLE DEPTH TESTING
