@@ -1,5 +1,3 @@
-use anyhow::{bail, Result};
-
 use crate::resources::ResourceLoader;
 pub struct Shader {
     gl: gl::Gl,
@@ -16,11 +14,10 @@ impl Shader {
         res: &ResourceLoader,
         file_path: &str,
         kind: gl::types::GLenum,
-    ) -> Result<Shader> {
+    ) -> Result<Shader, String> {
         let source = res
             .load_cstring(file_path)
-            .map_err(|e| format!("Error loading resource {}: {:?}", file_path, e))
-            .unwrap();
+            .map_err(|e| format!("Error loading shader {}: {:?}", file_path, e))?;
 
         let shader_id = unsafe { gl.CreateShader(kind) };
 
@@ -49,12 +46,12 @@ impl Shader {
                 info_log.set_len(log_len.try_into().unwrap());
             }
 
-            bail!(
+            return Err(format!(
                 "Error: {} shader from {} compilation failed: {}",
                 shader_type,
                 file_path,
                 String::from_utf8_lossy(&info_log)
-            );
+            ));
         }
 
         println!("{} shader was compiled successfully.", shader_type);
@@ -68,7 +65,7 @@ impl Shader {
         gl: &gl::Gl,
         res: &ResourceLoader,
         file_path: &str,
-    ) -> Result<Shader> {
+    ) -> Result<Shader, String> {
         Shader::from_source(gl, res, file_path, gl::VERTEX_SHADER)
     }
 
@@ -76,7 +73,7 @@ impl Shader {
         gl: &gl::Gl,
         res: &ResourceLoader,
         file_path: &str,
-    ) -> Result<Shader> {
+    ) -> Result<Shader, String> {
         Shader::from_source(gl, res, file_path, gl::FRAGMENT_SHADER)
     }
 }

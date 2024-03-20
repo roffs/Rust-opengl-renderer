@@ -1,5 +1,3 @@
-use anyhow::Result;
-
 use crate::resources::ResourceLoader;
 
 pub struct Texture {
@@ -8,8 +6,10 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn load(gl: &gl::Gl, res: &ResourceLoader, path: &str) -> Result<Texture> {
-        let img = res.load_image(path).unwrap();
+    pub fn load(gl: &gl::Gl, res: &ResourceLoader, path: &str) -> Result<Texture, String> {
+        let img = res
+            .load_image(path)
+            .map_err(|e| format!("Error loading shader {}: {:?}", path, e))?;
 
         let mut id: gl::types::GLuint = 0;
         unsafe { gl.GenTextures(1, &mut id) };

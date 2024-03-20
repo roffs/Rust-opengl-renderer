@@ -964,7 +964,6 @@ dependencies = [
 name = "rust-opengl-renderer"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "cgmath",
  "fs_extra",
  "gl",

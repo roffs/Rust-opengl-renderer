@@ -18,7 +18,7 @@ use texture::Texture;
 const WIDTH: u32 = 1080;
 const HEIGHT: u32 = 720;
 
-pub fn run() -> anyhow::Result<()> {
+pub fn run() {
     // INITIALIZE GRAPHICS AND WINDOW CONTEXT
 
     let mut glfw = glfw::init(glfw::fail_on_errors).unwrap();
@@ -47,20 +47,21 @@ pub fn run() -> anyhow::Result<()> {
 
     // SHADER PROGRAM
 
-    let vertex_shader = Shader::from_vertex_source(&gl, &resources, "assets/shaders/shader.vert")?;
+    let vertex_shader =
+        Shader::from_vertex_source(&gl, &resources, "assets/shaders/shader.vert").unwrap();
     let fragment_shader =
-        Shader::from_fragment_source(&gl, &resources, "assets/shaders/shader.frag")?;
+        Shader::from_fragment_source(&gl, &resources, "assets/shaders/shader.frag").unwrap();
 
-    let shader_program = Program::from_shaders(&gl, &[vertex_shader, fragment_shader])?;
+    let shader_program = Program::from_shaders(&gl, &[vertex_shader, fragment_shader]).unwrap();
     shader_program.use_program();
 
     // SET UNIFORMS
 
-    let uniform_color_location = shader_program.get_uniform_location("ourColor")?;
+    let uniform_color_location = shader_program.get_uniform_location("ourColor").unwrap();
     shader_program.set_uniform_4f(uniform_color_location, (0.0, 1.0, 0.0, 1.0));
 
     let model = Matrix4::from_translation(Vector3::new(0.2, 0.2, 0.2));
-    let uniform_model_location = shader_program.get_uniform_location("model")?;
+    let uniform_model_location = shader_program.get_uniform_location("model").unwrap();
     shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
 
     let mut camera = Camera::new(
@@ -75,7 +76,7 @@ pub fn run() -> anyhow::Result<()> {
 
     // CUBE
 
-    let texture = Texture::load(&gl, &resources, "assets/textures/texture.png")?;
+    let texture = Texture::load(&gl, &resources, "assets/textures/texture.png").unwrap();
     let cube = Mesh::create_cube(&gl, texture);
 
     // ENABLE DEPTH TESTING
@@ -85,10 +86,11 @@ pub fn run() -> anyhow::Result<()> {
     // EVENT LOOP
 
     while !window.should_close() {
-        let uniform_view_location = shader_program.get_uniform_location("view")?;
+        let uniform_view_location = shader_program.get_uniform_location("view").unwrap();
         shader_program.set_uniform_matrix_4fv(uniform_view_location, camera.get_view());
 
-        let uniform_projection_location = shader_program.get_uniform_location("projection")?;
+        let uniform_projection_location =
+            shader_program.get_uniform_location("projection").unwrap();
         shader_program.set_uniform_matrix_4fv(uniform_projection_location, camera.get_projection());
 
         unsafe {
@@ -122,6 +124,4 @@ pub fn run() -> anyhow::Result<()> {
             }
         }
     }
-
-    Ok(())
 }

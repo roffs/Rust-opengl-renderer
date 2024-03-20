@@ -1,4 +1,3 @@
-use anyhow::{bail, Result};
 use cgmath::Matrix;
 
 use crate::shader::Shader;
@@ -9,7 +8,7 @@ pub struct Program {
 }
 
 impl Program {
-    pub fn from_shaders(gl: &gl::Gl, shaders: &[Shader]) -> Result<Program> {
+    pub fn from_shaders(gl: &gl::Gl, shaders: &[Shader]) -> Result<Program, String> {
         let program_id = unsafe { gl.CreateProgram() };
 
         for shader in shaders {
@@ -34,10 +33,10 @@ impl Program {
                 info_log.set_len(log_len.try_into().unwrap());
             }
 
-            bail!(
+            return Err(format!(
                 "Error: Program linking failed: {}",
                 String::from_utf8_lossy(&info_log)
-            );
+            ));
         };
 
         println!("Shader program was created successfully");
@@ -51,7 +50,7 @@ impl Program {
         unsafe { self.gl.UseProgram(self.id) };
     }
 
-    pub fn get_uniform_location(&self, name: &str) -> Result<gl::types::GLint> {
+    pub fn get_uniform_location(&self, name: &str) -> Result<gl::types::GLint, String> {
         let uniform_cname =
             std::ffi::CString::new(name).expect("expected uniform name to have no nul bytes");
 
@@ -60,15 +59,13 @@ impl Program {
                 .GetUniformLocation(self.id, uniform_cname.as_ptr().cast())
         };
 
-        if location == -1 {
-            bail!(
+        match location {
+            -1 => Err(format!(
                 "Uniform location \"{}\" was not found in program with id {}",
-                name,
-                self.id
-            )
+                name, self.id
+            )),
+            _ => Ok(location),
         }
-
-        Ok(location)
     }
 
     pub fn set_uniform_4f(&self, location: gl::types::GLint, value: (f32, f32, f32, f32)) {
