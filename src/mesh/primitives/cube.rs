@@ -48,51 +48,8 @@ const CUBE_INDICES: [i32; 36] = [
     20, 23, 22, 20, 22, 21, // Bottom
 ];
 
-impl Mesh<MeshVertex> {
-    pub fn create_cube(gl: &gl::Gl, texture: Texture) -> Mesh<MeshVertex> {
-        let vertices = CUBE_VERTICES;
-        let indices = CUBE_INDICES;
-
-        let mut vao = 0;
-        unsafe { gl.GenVertexArrays(1, &mut vao) };
-
-        let mut vbo = 0;
-        unsafe { gl.GenBuffers(1, &mut vbo) };
-
-        let mut ebo = 0;
-        unsafe { gl.GenBuffers(1, &mut ebo) };
-
-        unsafe {
-            gl.BindVertexArray(vao);
-            gl.BindBuffer(gl::ARRAY_BUFFER, vbo);
-            gl.BufferData(
-                gl::ARRAY_BUFFER,
-                (std::mem::size_of::<MeshVertex>() * vertices.len()) as isize,
-                vertices.as_ptr().cast(),
-                gl::STATIC_DRAW,
-            );
-
-            gl.BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
-            gl.BufferData(
-                gl::ELEMENT_ARRAY_BUFFER,
-                (std::mem::size_of::<i32>() * indices.len()) as isize,
-                indices.as_ptr().cast(),
-                gl::STATIC_DRAW,
-            );
-
-            MeshVertex::set_vertex_attrib_pointer(gl);
-        }
-
-        Mesh {
-            gl: gl.clone(),
-
-            vertices,
-            indices,
-            texture,
-
-            vao,
-            vbo,
-            ebo,
-        }
+impl<'a> Mesh<'a, MeshVertex> {
+    pub fn create_cube(gl: &gl::Gl, texture: Texture) -> Mesh<'a, MeshVertex> {
+        Mesh::create(gl, &CUBE_VERTICES, &CUBE_INDICES, texture)
     }
 }
