@@ -3,8 +3,8 @@ use crate::{
     texture::Texture,
 };
 
-impl Mesh<MeshVertex> {
-    pub fn create_cube(gl: &gl::Gl, texture: Texture) -> Mesh<MeshVertex> {
+impl<'a> Mesh<'a, MeshVertex> {
+    pub fn create_cube(gl: &gl::Gl, texture: &'a Texture) -> Mesh<'a, MeshVertex> {
         let cube_vertices = [
             // Front
             MeshVertex::new((-0.5, -0.5, 0.5), (0.0, 0.0)),

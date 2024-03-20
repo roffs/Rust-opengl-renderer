@@ -5,20 +5,25 @@ use crate::texture::Texture;
 
 use self::vertex::Vertex;
 
-pub struct Mesh<T: Vertex> {
+pub struct Mesh<'a, T: Vertex> {
     gl: gl::Gl,
 
     vertices: Vec<T>,
     indices: Vec<i32>,
-    texture: Texture,
+    texture: &'a Texture,
 
     vao: gl::types::GLuint,
     vbo: gl::types::GLuint,
     ebo: gl::types::GLuint,
 }
 
-impl<T: Vertex> Mesh<T> {
-    pub fn create(gl: &gl::Gl, vertices: Vec<T>, indices: Vec<i32>, texture: Texture) -> Mesh<T> {
+impl<'a, T: Vertex> Mesh<'a, T> {
+    pub fn create(
+        gl: &gl::Gl,
+        vertices: Vec<T>,
+        indices: Vec<i32>,
+        texture: &'a Texture,
+    ) -> Mesh<'a, T> {
         let mut vao = 0;
         unsafe { gl.GenVertexArrays(1, &mut vao) };
 

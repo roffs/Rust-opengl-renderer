@@ -77,7 +77,7 @@ pub fn run() {
     // CUBE
 
     let texture = Texture::load(&gl, &resources, "assets/textures/texture.png").unwrap();
-    let cube = Mesh::create_cube(&gl, texture);
+    let cube = Mesh::create_cube(&gl, &texture);
 
     // ENABLE DEPTH TESTING
 
