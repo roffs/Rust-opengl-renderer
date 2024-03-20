@@ -5,11 +5,11 @@ use crate::texture::Texture;
 
 use self::vertex::Vertex;
 
-pub struct Mesh<'a, T: Vertex> {
+pub struct Mesh<T: Vertex> {
     gl: gl::Gl,
 
-    vertices: &'a [T],
-    indices: &'a [i32],
+    vertices: Vec<T>,
+    indices: Vec<i32>,
     texture: Texture,
 
     vao: gl::types::GLuint,
@@ -17,13 +17,8 @@ pub struct Mesh<'a, T: Vertex> {
     ebo: gl::types::GLuint,
 }
 
-impl<'a, T: Vertex> Mesh<'a, T> {
-    pub fn create(
-        gl: &gl::Gl,
-        vertices: &'a [T],
-        indices: &'a [i32],
-        texture: Texture,
-    ) -> Mesh<'a, T> {
+impl<T: Vertex> Mesh<T> {
+    pub fn create(gl: &gl::Gl, vertices: Vec<T>, indices: Vec<i32>, texture: Texture) -> Mesh<T> {
         let mut vao = 0;
         unsafe { gl.GenVertexArrays(1, &mut vao) };
 
@@ -38,7 +33,7 @@ impl<'a, T: Vertex> Mesh<'a, T> {
             gl.BindBuffer(gl::ARRAY_BUFFER, vbo);
             gl.BufferData(
                 gl::ARRAY_BUFFER,
-                std::mem::size_of_val(vertices) as isize,
+                std::mem::size_of_val(&vertices) as isize,
                 vertices.as_ptr().cast(),
                 gl::STATIC_DRAW,
             );
@@ -46,7 +41,7 @@ impl<'a, T: Vertex> Mesh<'a, T> {
             gl.BindBuffer(gl::ELEMENT_ARRAY_BUFFER, ebo);
             gl.BufferData(
                 gl::ELEMENT_ARRAY_BUFFER,
-                std::mem::size_of_val(indices) as isize,
+                std::mem::size_of_val(&indices) as isize,
                 indices.as_ptr().cast(),
                 gl::STATIC_DRAW,
             );
