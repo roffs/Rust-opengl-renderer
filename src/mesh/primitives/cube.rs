@@ -1,39 +1,42 @@
 use crate::{
-    mesh::{vertex::Vertex, Mesh},
+    mesh::{
+        vertex::{MeshVertex, Vertex},
+        Mesh,
+    },
     texture::Texture,
 };
 
-static CUBE_VERTICES: [Vertex; 24] = [
+static CUBE_VERTICES: [MeshVertex; 24] = [
     // Front
-    Vertex::new((-0.5, -0.5, 0.5), (0.0, 0.0)),
-    Vertex::new((0.5, -0.5, 0.5), (1.0, 0.0)),
-    Vertex::new((0.5, 0.5, 0.5), (1.0, 1.0)),
-    Vertex::new((-0.5, 0.5, 0.5), (0.0, 1.0)),
+    MeshVertex::new((-0.5, -0.5, 0.5), (0.0, 0.0)),
+    MeshVertex::new((0.5, -0.5, 0.5), (1.0, 0.0)),
+    MeshVertex::new((0.5, 0.5, 0.5), (1.0, 1.0)),
+    MeshVertex::new((-0.5, 0.5, 0.5), (0.0, 1.0)),
     // Back
-    Vertex::new((-0.5, -0.5, -0.5), (0.0, 0.0)),
-    Vertex::new((0.5, -0.5, -0.5), (1.0, 0.0)),
-    Vertex::new((0.5, 0.5, -0.5), (1.0, 1.0)),
-    Vertex::new((-0.5, 0.5, -0.5), (0.0, 1.0)),
+    MeshVertex::new((-0.5, -0.5, -0.5), (0.0, 0.0)),
+    MeshVertex::new((0.5, -0.5, -0.5), (1.0, 0.0)),
+    MeshVertex::new((0.5, 0.5, -0.5), (1.0, 1.0)),
+    MeshVertex::new((-0.5, 0.5, -0.5), (0.0, 1.0)),
     // Left
-    Vertex::new((-0.5, -0.5, -0.5), (0.0, 0.0)),
-    Vertex::new((-0.5, -0.5, 0.5), (1.0, 0.0)),
-    Vertex::new((-0.5, 0.5, 0.5), (1.0, 1.0)),
-    Vertex::new((-0.5, 0.5, -0.5), (0.0, 1.0)),
+    MeshVertex::new((-0.5, -0.5, -0.5), (0.0, 0.0)),
+    MeshVertex::new((-0.5, -0.5, 0.5), (1.0, 0.0)),
+    MeshVertex::new((-0.5, 0.5, 0.5), (1.0, 1.0)),
+    MeshVertex::new((-0.5, 0.5, -0.5), (0.0, 1.0)),
     // Right
-    Vertex::new((0.5, -0.5, -0.5), (0.0, 0.0)),
-    Vertex::new((0.5, -0.5, 0.5), (1.0, 0.0)),
-    Vertex::new((0.5, 0.5, 0.5), (1.0, 1.0)),
-    Vertex::new((0.5, 0.5, -0.5), (0.0, 1.0)),
+    MeshVertex::new((0.5, -0.5, -0.5), (0.0, 0.0)),
+    MeshVertex::new((0.5, -0.5, 0.5), (1.0, 0.0)),
+    MeshVertex::new((0.5, 0.5, 0.5), (1.0, 1.0)),
+    MeshVertex::new((0.5, 0.5, -0.5), (0.0, 1.0)),
     // Top
-    Vertex::new((-0.5, 0.5, 0.5), (0.0, 0.0)),
-    Vertex::new((0.5, 0.5, 0.5), (1.0, 0.0)),
-    Vertex::new((0.5, 0.5, -0.5), (1.0, 1.0)),
-    Vertex::new((-0.5, 0.5, -0.5), (0.0, 1.0)),
+    MeshVertex::new((-0.5, 0.5, 0.5), (0.0, 0.0)),
+    MeshVertex::new((0.5, 0.5, 0.5), (1.0, 0.0)),
+    MeshVertex::new((0.5, 0.5, -0.5), (1.0, 1.0)),
+    MeshVertex::new((-0.5, 0.5, -0.5), (0.0, 1.0)),
     // Bottom
-    Vertex::new((-0.5, -0.5, 0.5), (0.0, 0.0)),
-    Vertex::new((0.5, -0.5, 0.5), (1.0, 0.0)),
-    Vertex::new((0.5, -0.5, -0.5), (1.0, 1.0)),
-    Vertex::new((-0.5, -0.5, -0.5), (0.0, 1.0)),
+    MeshVertex::new((-0.5, -0.5, 0.5), (0.0, 0.0)),
+    MeshVertex::new((0.5, -0.5, 0.5), (1.0, 0.0)),
+    MeshVertex::new((0.5, -0.5, -0.5), (1.0, 1.0)),
+    MeshVertex::new((-0.5, -0.5, -0.5), (0.0, 1.0)),
 ];
 
 const CUBE_INDICES: [i32; 36] = [
@@ -45,8 +48,8 @@ const CUBE_INDICES: [i32; 36] = [
     20, 23, 22, 20, 22, 21, // Bottom
 ];
 
-impl Mesh {
-    pub fn create_cube(gl: &gl::Gl, texture: Texture) -> Mesh {
+impl Mesh<MeshVertex> {
+    pub fn create_cube(gl: &gl::Gl, texture: Texture) -> Mesh<MeshVertex> {
         let vertices = CUBE_VERTICES;
         let indices = CUBE_INDICES;
 
@@ -64,7 +67,7 @@ impl Mesh {
             gl.BindBuffer(gl::ARRAY_BUFFER, vbo);
             gl.BufferData(
                 gl::ARRAY_BUFFER,
-                (std::mem::size_of::<Vertex>() * vertices.len()) as isize,
+                (std::mem::size_of::<MeshVertex>() * vertices.len()) as isize,
                 vertices.as_ptr().cast(),
                 gl::STATIC_DRAW,
             );
@@ -77,24 +80,7 @@ impl Mesh {
                 gl::STATIC_DRAW,
             );
 
-            gl.VertexAttribPointer(
-                0,
-                3,
-                gl::FLOAT,
-                gl::FALSE,
-                5 * std::mem::size_of::<f32>() as i32,
-                std::ptr::null(),
-            );
-            gl.VertexAttribPointer(
-                1,
-                2,
-                gl::FLOAT,
-                gl::FALSE,
-                5 * std::mem::size_of::<f32>() as i32,
-                (3 * std::mem::size_of::<f32>()) as *const _,
-            );
-            gl.EnableVertexAttribArray(1);
-            gl.EnableVertexAttribArray(0);
+            MeshVertex::set_vertex_attrib_pointer(gl);
 
             gl.BindVertexArray(0);
             gl.BindBuffer(gl::ARRAY_BUFFER, 0);

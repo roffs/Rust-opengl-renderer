@@ -5,10 +5,10 @@ use crate::texture::Texture;
 
 use self::vertex::Vertex;
 
-pub struct Mesh {
+pub struct Mesh<T: Vertex> {
     gl: gl::Gl,
 
-    vertices: [Vertex; 24],
+    vertices: [T; 24],
     indices: [i32; 36],
     texture: Texture,
 
@@ -17,7 +17,7 @@ pub struct Mesh {
     ebo: gl::types::GLuint,
 }
 
-impl Mesh {
+impl<T: Vertex> Mesh<T> {
     pub fn draw(&self) {
         unsafe {
             self.gl.BindVertexArray(self.vao);
