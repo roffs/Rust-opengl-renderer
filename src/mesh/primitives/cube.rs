@@ -81,10 +81,6 @@ impl Mesh<MeshVertex> {
             );
 
             MeshVertex::set_vertex_attrib_pointer(gl);
-
-            gl.BindVertexArray(0);
-            gl.BindBuffer(gl::ARRAY_BUFFER, 0);
-            gl.BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
         }
 
         Mesh {

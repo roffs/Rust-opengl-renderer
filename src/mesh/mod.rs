@@ -31,11 +31,6 @@ impl<T: Vertex> Mesh<T> {
                 gl::UNSIGNED_INT,
                 std::ptr::null(),
             );
-
-            self.gl.BindVertexArray(0);
-            self.gl.BindBuffer(gl::ARRAY_BUFFER, 0);
-            self.gl.BindBuffer(gl::ELEMENT_ARRAY_BUFFER, 0);
-            self.texture.unbind();
         };
     }
 }
