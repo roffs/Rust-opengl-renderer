@@ -6,9 +6,8 @@ mod texture;
 
 use std::path::Path;
 
-use cgmath::{Matrix4, Vector3};
+use cgmath::Matrix4;
 use glfw::{Context, OpenGlProfileHint, WindowHint};
-use mesh::Mesh;
 
 use camera::Camera;
 use resources::ResourceLoader;
@@ -57,10 +56,10 @@ pub fn run() {
 
     // SET UNIFORMS
 
-    let uniform_color_location = shader_program.get_uniform_location("ourColor").unwrap();
-    shader_program.set_uniform_4f(uniform_color_location, (0.0, 1.0, 0.0, 1.0));
+    // let uniform_color_location = shader_program.get_uniform_location("ourColor").unwrap();
+    // shader_program.set_uniform_4f(uniform_color_location, (0.0, 1.0, 0.0, 1.0));
 
-    let model = Matrix4::from_translation(Vector3::new(0.2, 0.2, 0.2));
+    let model = Matrix4::from_angle_x(cgmath::Deg(-90.0));
     let uniform_model_location = shader_program.get_uniform_location("model").unwrap();
     shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
 
@@ -76,8 +75,17 @@ pub fn run() {
 
     // CUBE
 
-    let texture = Texture::load(&gl, &resources, "assets/textures/texture.png").unwrap();
-    let cube = Mesh::create_cube(&gl, &texture);
+    let texture = Texture::load(
+        &gl,
+        &resources,
+        "assets/models/shiba/textures/default_baseColor.png",
+    )
+    .unwrap();
+    // let cube = Mesh::create_cube(&gl, &texture);
+
+    // --- TEMP ---
+    let model_3d = resources.load_model(&gl, "assets/models/shiba/scene.gltf", &texture);
+    // ------------
 
     // ENABLE DEPTH TESTING
 
@@ -97,7 +105,9 @@ pub fn run() {
             gl.ClearColor(0.3, 0.4, 0.6, 1.0);
             gl.Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-            cube.draw();
+            for mesh in &model_3d {
+                mesh.draw();
+            }
         }
 
         glfw.poll_events();

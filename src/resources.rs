@@ -3,8 +3,15 @@ use std::fs;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
+use gltf::mesh::util::ReadIndices;
+use gltf::Semantic;
 use image::ImageBuffer;
 use image::{io::Reader, ImageError};
+
+use crate::mesh::{Mesh, MeshVertex};
+use crate::texture::Texture;
+
+use gltf::{Mesh as GltfMesh, Node as GltfNode, Semantic as GltfSemantic};
 
 #[derive(Debug)]
 pub enum Error {
@@ -45,10 +52,15 @@ impl ResourceLoader {
         })
     }
 
+    pub fn load_binary(&self, resource_path: &Path) -> Result<Vec<u8>, std::io::Error> {
+        let path = relative_to_absolute_resource_path(&self.root_path, resource_path);
+        std::fs::read(path)
+    }
+
     pub fn load_cstring(&self, resource_path: &str) -> Result<ffi::CString, Error> {
         let mut file = fs::File::open(relative_to_absolute_resource_path(
             &self.root_path,
-            resource_path,
+            Path::new(resource_path),
         ))?;
 
         // allocate buffer of the same size as file
@@ -64,18 +76,87 @@ impl ResourceLoader {
         &self,
         resource_path: &str,
     ) -> Result<ImageBuffer<image::Rgba<u8>, Vec<u8>>, Error> {
-        let absolute_path = relative_to_absolute_resource_path(&self.root_path, resource_path);
-        let img = Reader::open(absolute_path)?.decode()?.flipv().to_rgba8();
+        let absolute_path =
+            relative_to_absolute_resource_path(&self.root_path, Path::new(resource_path));
+        let img = Reader::open(absolute_path)?.decode()?.to_rgba8();
 
         Ok(img)
     }
+
+    pub fn load_model<'a>(
+        &'a self,
+        gl: &gl::Gl,
+        resource_path: &str,
+        texture: &'a Texture,
+    ) -> Vec<Mesh<MeshVertex>> {
+        let relative_path = std::path::Path::new(resource_path);
+        let current_directory = relative_path.parent().unwrap();
+
+        let file = fs::File::open(resource_path).unwrap();
+        let reader = io::BufReader::new(file);
+        let gltf = gltf::Gltf::from_reader(reader).unwrap();
+
+        // Load buffers
+        let mut buffer_data = Vec::new();
+        for buffer in gltf.buffers() {
+            match buffer.source() {
+                gltf::buffer::Source::Uri(uri) => {
+                    let binary_data = self
+                        .load_binary(&relative_to_absolute_resource_path(
+                            &self.root_path,
+                            &current_directory.join(uri),
+                        ))
+                        .expect("Failed to load binary");
+                    buffer_data.push(binary_data);
+                }
+                gltf::buffer::Source::Bin => {
+                    if let Some(blob) = gltf.blob.as_deref() {
+                        buffer_data.push(blob.into())
+                    };
+                }
+            }
+        }
+
+        let mut meshes: Vec<Mesh<MeshVertex>> = Vec::new();
+
+        for mesh in gltf.meshes() {
+            let mut mesh_vertices = Vec::new();
+            let mut mesh_indices = Vec::new();
+
+            for primitive in mesh.primitives() {
+                let reader = primitive.reader(|buffer| Some(&buffer_data[buffer.index()]));
+
+                // Read vertices and their attributes
+                if let (Some(positions), Some(uvs)) = (
+                    reader.read_positions(),
+                    reader.read_tex_coords(0).map(|v| v.into_f32()),
+                ) {
+                    positions.zip(uvs).for_each(|(pos, uv)| {
+                        mesh_vertices
+                            .push(MeshVertex::new((pos[0], pos[1], pos[2]), (uv[0], uv[1])))
+                    });
+                }
+
+                // Read vertex indices
+                if let Some(indices) = reader.read_indices() {
+                    indices
+                        .into_u32()
+                        .for_each(|index| mesh_indices.push(index as i32));
+                }
+            }
+
+            meshes.push(Mesh::create(gl, mesh_vertices, mesh_indices, texture));
+        }
+
+        meshes
+    }
 }
 
-fn relative_to_absolute_resource_path(root_dir: &Path, location: &str) -> PathBuf {
+fn relative_to_absolute_resource_path(root_dir: &Path, location: &Path) -> PathBuf {
     let mut path: PathBuf = root_dir.into();
 
-    for part in location.split('/') {
-        path = path.join(part);
+    for dir in location.iter() {
+        path = path.join(dir)
     }
 
     path

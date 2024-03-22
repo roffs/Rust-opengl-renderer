@@ -3,7 +3,7 @@ mod vertex;
 
 use crate::texture::Texture;
 
-use self::vertex::Vertex;
+pub use self::vertex::{MeshVertex, Vertex};
 
 pub struct Mesh<'a, T: Vertex> {
     gl: gl::Gl,

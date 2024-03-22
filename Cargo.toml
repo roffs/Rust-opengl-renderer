@@ -10,6 +10,7 @@ edition = "2021"
 cgmath = "0.18.0"
 gl = { path = "gl" }
 glfw = "0.55.0"
+gltf = "1.4.0"
 image = "0.25.0"
 
 [build-dependencies]
