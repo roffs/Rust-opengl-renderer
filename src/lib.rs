@@ -1,5 +1,6 @@
 mod camera;
 mod mesh;
+mod model;
 mod resources;
 mod shader;
 mod texture;
@@ -10,6 +11,8 @@ use cgmath::Matrix4;
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 
 use camera::Camera;
+use mesh::Mesh;
+use model::Model;
 use resources::ResourceLoader;
 use shader::{Program, Shader};
 use texture::Texture;
@@ -59,10 +62,6 @@ pub fn run() {
     // let uniform_color_location = shader_program.get_uniform_location("ourColor").unwrap();
     // shader_program.set_uniform_4f(uniform_color_location, (0.0, 1.0, 0.0, 1.0));
 
-    let model = Matrix4::from_angle_x(cgmath::Deg(-90.0));
-    let uniform_model_location = shader_program.get_uniform_location("model").unwrap();
-    shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
-
     let mut camera = Camera::new(
         (0.0, 3.0, 3.0),
         (0.0, -1.0, -1.0),
@@ -75,16 +74,12 @@ pub fn run() {
 
     // CUBE
 
-    let texture = Texture::load(
-        &gl,
-        &resources,
-        "assets/models/shiba/textures/default_baseColor.png",
-    )
-    .unwrap();
-    // let cube = Mesh::create_cube(&gl, &texture);
+    let texture = Texture::load(&gl, &resources, "assets/textures/texture.png").unwrap();
+    let cube_mesh = Mesh::create_cube(&gl);
+    let cube = Model::new(vec![(cube_mesh, 0)], vec![texture]);
 
     // --- TEMP ---
-    let model_3d = resources.load_model(&gl, "assets/models/shiba/scene.gltf", &texture);
+    let model_3d = resources.load_model(&gl, "assets/models/shiba/scene.gltf");
     // ------------
 
     // ENABLE DEPTH TESTING
@@ -105,9 +100,17 @@ pub fn run() {
             gl.ClearColor(0.3, 0.4, 0.6, 1.0);
             gl.Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-            for mesh in &model_3d {
-                mesh.draw();
-            }
+            let model = Matrix4::from_angle_x(cgmath::Deg(-90.0));
+            let uniform_model_location = shader_program.get_uniform_location("model").unwrap();
+            shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
+
+            model_3d.draw();
+
+            let model = Matrix4::from_translation((-2.5, 0.0, 0.0).into());
+            let uniform_model_location = shader_program.get_uniform_location("model").unwrap();
+            shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
+
+            cube.draw();
         }
 
         glfw.poll_events();

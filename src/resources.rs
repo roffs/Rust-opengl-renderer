@@ -3,15 +3,12 @@ use std::fs;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
-use gltf::mesh::util::ReadIndices;
-use gltf::Semantic;
 use image::ImageBuffer;
 use image::{io::Reader, ImageError};
 
 use crate::mesh::{Mesh, MeshVertex};
+use crate::model::Model;
 use crate::texture::Texture;
-
-use gltf::{Mesh as GltfMesh, Node as GltfNode, Semantic as GltfSemantic};
 
 #[derive(Debug)]
 pub enum Error {
@@ -83,12 +80,7 @@ impl ResourceLoader {
         Ok(img)
     }
 
-    pub fn load_model<'a>(
-        &'a self,
-        gl: &gl::Gl,
-        resource_path: &str,
-        texture: &'a Texture,
-    ) -> Vec<Mesh<MeshVertex>> {
+    pub fn load_model<'a>(&'a self, gl: &gl::Gl, resource_path: &str) -> Model {
         let relative_path = std::path::Path::new(resource_path);
         let current_directory = relative_path.parent().unwrap();
 
@@ -117,7 +109,29 @@ impl ResourceLoader {
             }
         }
 
-        let mut meshes: Vec<Mesh<MeshVertex>> = Vec::new();
+        let mut textures = Vec::new();
+        for texture in gltf.textures() {
+            match texture.source().source() {
+                gltf::image::Source::View { view, mime_type } => {
+                    println!("Texture view: {:?}", view)
+                }
+                gltf::image::Source::Uri { uri, mime_type: _ } => textures.push(
+                    Texture::load(
+                        gl,
+                        self,
+                        relative_to_absolute_resource_path(
+                            &self.root_path,
+                            &current_directory.join(uri),
+                        )
+                        .to_str()
+                        .unwrap(),
+                    )
+                    .unwrap(),
+                ),
+            };
+        }
+
+        let mut meshes = Vec::new();
 
         for mesh in gltf.meshes() {
             let mut mesh_vertices = Vec::new();
@@ -145,10 +159,10 @@ impl ResourceLoader {
                 }
             }
 
-            meshes.push(Mesh::create(gl, mesh_vertices, mesh_indices, texture));
+            meshes.push((Mesh::create(gl, mesh_vertices, mesh_indices), 0));
         }
 
-        meshes
+        Model::new(meshes, textures)
     }
 }
 

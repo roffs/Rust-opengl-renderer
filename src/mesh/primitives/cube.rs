@@ -1,10 +1,7 @@
-use crate::{
-    mesh::{vertex::MeshVertex, Mesh},
-    texture::Texture,
-};
+use crate::mesh::{vertex::MeshVertex, Mesh};
 
-impl<'a> Mesh<'a, MeshVertex> {
-    pub fn create_cube(gl: &gl::Gl, texture: &'a Texture) -> Mesh<'a, MeshVertex> {
+impl Mesh<MeshVertex> {
+    pub fn create_cube(gl: &gl::Gl) -> Mesh<MeshVertex> {
         let cube_vertices = [
             // Front
             MeshVertex::new((-0.5, -0.5, 0.5), (0.0, 0.0)),
@@ -47,6 +44,6 @@ impl<'a> Mesh<'a, MeshVertex> {
             20, 23, 22, 20, 22, 21, // Bottom
         ];
 
-        Mesh::create(gl, cube_vertices.into(), cube_indices.into(), texture)
+        Mesh::create(gl, cube_vertices.into(), cube_indices.into())
     }
 }

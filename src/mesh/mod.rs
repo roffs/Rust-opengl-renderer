@@ -5,25 +5,19 @@ use crate::texture::Texture;
 
 pub use self::vertex::{MeshVertex, Vertex};
 
-pub struct Mesh<'a, T: Vertex> {
+pub struct Mesh<T: Vertex> {
     gl: gl::Gl,
 
     vertices: Vec<T>,
     indices: Vec<i32>,
-    texture: &'a Texture,
 
     vao: gl::types::GLuint,
     vbo: gl::types::GLuint,
     ebo: gl::types::GLuint,
 }
 
-impl<'a, T: Vertex> Mesh<'a, T> {
-    pub fn create(
-        gl: &gl::Gl,
-        vertices: Vec<T>,
-        indices: Vec<i32>,
-        texture: &'a Texture,
-    ) -> Mesh<'a, T> {
+impl<T: Vertex> Mesh<T> {
+    pub fn create(gl: &gl::Gl, vertices: Vec<T>, indices: Vec<i32>) -> Mesh<T> {
         let mut vao = 0;
         unsafe { gl.GenVertexArrays(1, &mut vao) };
 
@@ -59,7 +53,6 @@ impl<'a, T: Vertex> Mesh<'a, T> {
 
             vertices,
             indices,
-            texture,
 
             vao,
             vbo,
@@ -67,12 +60,12 @@ impl<'a, T: Vertex> Mesh<'a, T> {
         }
     }
 
-    pub fn draw(&self) {
+    pub fn draw(&self, texture: &Texture) {
         unsafe {
             self.gl.BindVertexArray(self.vao);
             self.gl.BindBuffer(gl::ARRAY_BUFFER, self.vbo);
             self.gl.BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.ebo);
-            self.texture.bind(gl::TEXTURE0);
+            texture.bind(gl::TEXTURE0);
 
             self.gl.DrawElements(
                 gl::TRIANGLES,
