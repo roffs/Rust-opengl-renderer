@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use image::ImageBuffer;
 use image::{io::Reader, ImageError};
 
+use crate::material::Material;
 use crate::mesh::{Mesh, MeshVertex};
 use crate::model::Model;
 use crate::texture::Texture;
@@ -80,7 +81,7 @@ impl ResourceLoader {
         Ok(img)
     }
 
-    pub fn load_model<'a>(&'a self, gl: &gl::Gl, resource_path: &str) -> Model {
+    pub fn load_model(&self, gl: &gl::Gl, resource_path: &str) -> Model {
         let relative_path = std::path::Path::new(resource_path);
         let current_directory = relative_path.parent().unwrap();
 
@@ -109,26 +110,46 @@ impl ResourceLoader {
             }
         }
 
-        let mut textures = Vec::new();
-        for texture in gltf.textures() {
-            match texture.source().source() {
-                gltf::image::Source::View { view, mime_type } => {
-                    println!("Texture view: {:?}", view)
+        // Load materials
+        let textures: Vec<_> = gltf.textures().collect();
+        let mut materials = Vec::new();
+
+        for material in gltf.materials() {
+            let texture_index = material
+                .pbr_metallic_roughness()
+                .base_color_texture()
+                .unwrap()
+                .tex_coord();
+
+            let texture = match textures
+                .get(texture_index as usize)
+                .unwrap()
+                .source()
+                .source()
+            {
+                gltf::image::Source::View {
+                    view: _,
+                    mime_type: _,
+                } => {
+                    // let start = view.offset();
+                    // let end = view.offset() + view.length();
+                    // let data = &buffer_data[view.buffer().index()][start..end];
+                    todo!()
                 }
-                gltf::image::Source::Uri { uri, mime_type: _ } => textures.push(
-                    Texture::load(
-                        gl,
-                        self,
-                        relative_to_absolute_resource_path(
-                            &self.root_path,
-                            &current_directory.join(uri),
-                        )
-                        .to_str()
-                        .unwrap(),
+                gltf::image::Source::Uri { uri, mime_type: _ } => Texture::load(
+                    gl,
+                    self,
+                    relative_to_absolute_resource_path(
+                        &self.root_path,
+                        &current_directory.join(uri),
                     )
+                    .to_str()
                     .unwrap(),
-                ),
+                )
+                .unwrap(),
             };
+
+            materials.push(Material::new(texture));
         }
 
         let mut meshes = Vec::new();
@@ -162,7 +183,7 @@ impl ResourceLoader {
             meshes.push((Mesh::create(gl, mesh_vertices, mesh_indices), 0));
         }
 
-        Model::new(meshes, textures)
+        Model::new(meshes, materials)
     }
 }
 

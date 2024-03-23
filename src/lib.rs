@@ -1,4 +1,5 @@
 mod camera;
+mod material;
 mod mesh;
 mod model;
 mod resources;
@@ -11,11 +12,9 @@ use cgmath::Matrix4;
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 
 use camera::Camera;
-use mesh::Mesh;
-use model::Model;
+
 use resources::ResourceLoader;
 use shader::{Program, Shader};
-use texture::Texture;
 
 const WIDTH: u32 = 1080;
 const HEIGHT: u32 = 720;
@@ -74,12 +73,12 @@ pub fn run() {
 
     // CUBE
 
-    let texture = Texture::load(&gl, &resources, "assets/textures/texture.png").unwrap();
-    let cube_mesh = Mesh::create_cube(&gl);
-    let cube = Model::new(vec![(cube_mesh, 0)], vec![texture]);
+    // let texture = Texture::load(&gl, &resources, "assets/textures/texture.png").unwrap();
+    // let cube_mesh = Mesh::create_cube(&gl);
+    // let cube = Model::new(vec![(cube_mesh, 0)], vec![Material::new(texture)]);
 
     // --- TEMP ---
-    let model_3d = resources.load_model(&gl, "assets/models/shiba/scene.gltf");
+    let model_3d = resources.load_model(&gl, "assets/models/stone_cube/scene.gltf");
     // ------------
 
     // ENABLE DEPTH TESTING
@@ -109,8 +108,7 @@ pub fn run() {
             let model = Matrix4::from_translation((-2.5, 0.0, 0.0).into());
             let uniform_model_location = shader_program.get_uniform_location("model").unwrap();
             shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
-
-            cube.draw();
+            // cube.draw();
         }
 
         glfw.poll_events();

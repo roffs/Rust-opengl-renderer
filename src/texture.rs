@@ -1,16 +1,13 @@
 use crate::resources::ResourceLoader;
 
+#[derive(Clone)]
 pub struct Texture {
     gl: gl::Gl,
     id: gl::types::GLuint,
 }
 
 impl Texture {
-    pub fn load(gl: &gl::Gl, res: &ResourceLoader, path: &str) -> Result<Texture, String> {
-        let img = res
-            .load_image(path)
-            .map_err(|e| format!("Error loading shader {}: {:?}", path, e))?;
-
+    fn new(gl: &gl::Gl, img: image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> Texture {
         let mut id: gl::types::GLuint = 0;
         unsafe { gl.GenTextures(1, &mut id) };
 
@@ -41,7 +38,24 @@ impl Texture {
             gl.BindTexture(gl::TEXTURE_2D, 0);
         }
 
-        Ok(Texture { gl: gl.clone(), id })
+        Texture { gl: gl.clone(), id }
+    }
+
+    pub fn load(gl: &gl::Gl, res: &ResourceLoader, path: &str) -> Result<Texture, String> {
+        let img = res
+            .load_image(path)
+            .map_err(|e| format!("Error loading image {}: {:?}", path, e))?;
+
+        Ok(Texture::new(gl, img))
+    }
+
+    pub fn from_binary_data(gl: &gl::Gl, data: &[u8]) -> Result<Texture, String> {
+        let mut reader = image::io::Reader::new(std::io::Cursor::new(data));
+        reader.set_format(image::ImageFormat::Png);
+        // reader.no_limits();
+        let img = reader.decode().map_err(|_| "Hey")?.flipv().to_rgba8();
+
+        Ok(Texture::new(gl, img))
     }
 
     pub fn bind(&self, slot: gl::types::GLenum) {
