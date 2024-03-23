@@ -114,19 +114,8 @@ impl ResourceLoader {
         let textures: Vec<_> = gltf.textures().collect();
         let mut materials = Vec::new();
 
-        for material in gltf.materials() {
-            let texture_index = material
-                .pbr_metallic_roughness()
-                .base_color_texture()
-                .unwrap()
-                .tex_coord();
-
-            let texture = match textures
-                .get(texture_index as usize)
-                .unwrap()
-                .source()
-                .source()
-            {
+        let load_texture = |texture: &gltf::Texture| {
+            match texture.source().source() {
                 gltf::image::Source::View {
                     view: _,
                     mime_type: _,
@@ -147,9 +136,25 @@ impl ResourceLoader {
                     .unwrap(),
                 )
                 .unwrap(),
-            };
+            }
+        };
 
-            materials.push(Material::new(texture));
+        let load_material = |material: gltf::Material| {
+            let texture_index = material
+                .pbr_metallic_roughness()
+                .base_color_texture()
+                .unwrap()
+                .tex_coord();
+
+            let texture = textures.get(texture_index as usize).unwrap();
+            let texture = load_texture(texture);
+
+            Material::new(texture)
+        };
+
+        for material in gltf.materials() {
+            let material = load_material(material);
+            materials.push(material);
         }
 
         let mut meshes = Vec::new();
