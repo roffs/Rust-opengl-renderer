@@ -10,7 +10,6 @@ use crate::material::Material;
 use crate::mesh::{Mesh, MeshVertex};
 use crate::model::Model;
 use crate::shader::Program;
-use crate::shader::Shader;
 use crate::texture::Texture;
 
 #[derive(Debug)]
@@ -83,7 +82,12 @@ impl ResourceLoader {
         Ok(img)
     }
 
-    pub fn load_model(&self, gl: &gl::Gl, resource_path: &str) -> Model {
+    pub fn load_model<'a>(
+        &'a self,
+        gl: &gl::Gl,
+        resource_path: &str,
+        program: &'a Program,
+    ) -> Model {
         let relative_path = std::path::Path::new(resource_path);
         let current_directory = relative_path.parent().unwrap();
 
@@ -141,12 +145,13 @@ impl ResourceLoader {
         };
 
         let load_material = |material: gltf::Material| {
-            let vertex_shader =
-                Shader::from_vertex_source(gl, self, "assets/shaders/shader.vert").unwrap();
-            let fragment_shader =
-                Shader::from_fragment_source(gl, self, "assets/shaders/shader.frag").unwrap();
+            // let vertex_shader =
+            //     Shader::from_vertex_source(gl, self, "assets/shaders/shader.vert").unwrap();
+            // let fragment_shader =
+            //     Shader::from_fragment_source(gl, self, "assets/shaders/shader.frag").unwrap();
 
-            let program = Program::from_shaders(gl, &[vertex_shader, fragment_shader]).unwrap();
+            // let program = Program::from_shaders(gl, &[vertex_shader, fragment_shader]).unwrap();
+            // program.set_global_uniforms();
 
             let diffuse = material
                 .pbr_metallic_roughness()

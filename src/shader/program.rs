@@ -50,6 +50,15 @@ impl Program {
         unsafe { self.gl.UseProgram(self.id) };
     }
 
+    pub fn set_global_uniforms(&self) {
+        unsafe {
+            let uniform_block_index = self
+                .gl
+                .GetUniformBlockIndex(self.id, "Matrices".as_bytes().as_ptr() as *const i8);
+            self.gl.UniformBlockBinding(self.id, uniform_block_index, 0);
+        };
+    }
+
     pub fn get_uniform_location(&self, name: &str) -> Result<gl::types::GLint, String> {
         let uniform_cname =
             std::ffi::CString::new(name).expect("expected uniform name to have no nul bytes");

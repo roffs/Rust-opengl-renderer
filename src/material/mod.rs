@@ -1,13 +1,13 @@
 use crate::{shader::Program, texture::Texture};
 
-pub struct Material {
-    program: Program,
+pub struct Material<'a> {
+    program: &'a Program,
     base_color: Texture,
     normal: Texture,
 }
 
-impl Material {
-    pub fn new(program: Program, base_color: Texture, normal: Texture) -> Material {
+impl<'a> Material<'a> {
+    pub fn new(program: &Program, base_color: Texture, normal: Texture) -> Material {
         Material {
             program,
             base_color,
@@ -22,7 +22,7 @@ impl Material {
         self.program.set_int("normal", 1);
     }
 
-    pub fn set_global_uniforms(&self, uniforms: &[(&str, cgmath::Matrix4<f32>)]) {
+    pub fn set_uniforms(&self, uniforms: &[(&str, cgmath::Matrix4<f32>)]) {
         for (name, value) in uniforms {
             self.program.set_uniform_matrix_4fv(name, *value);
         }

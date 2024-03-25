@@ -3,21 +3,21 @@ use crate::{
     mesh::{Mesh, MeshVertex},
 };
 
-pub struct Model {
+pub struct Model<'a> {
     meshes: Vec<(Mesh<MeshVertex>, i32)>,
-    materials: Vec<Material>,
+    materials: Vec<Material<'a>>,
 }
 
-impl Model {
+impl<'a> Model<'a> {
     pub fn new(meshes: Vec<(Mesh<MeshVertex>, i32)>, materials: Vec<Material>) -> Model {
         Model { meshes, materials }
     }
 
-    pub fn draw(&self, global_uniforms: &[(&str, cgmath::Matrix4<f32>)]) {
+    pub fn draw(&self, uniforms: &[(&str, cgmath::Matrix4<f32>)]) {
         for (mesh, material_index) in &self.meshes {
             let material = self.materials.get(*material_index as usize).unwrap();
             material.use_program();
-            material.set_global_uniforms(global_uniforms);
+            material.set_uniforms(uniforms);
             mesh.draw(material);
         }
     }

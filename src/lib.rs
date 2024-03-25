@@ -8,12 +8,13 @@ mod texture;
 
 use std::path::Path;
 
-use cgmath::Matrix4;
+use cgmath::{Matrix, Matrix4};
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 
 use camera::Camera;
 
 use resources::ResourceLoader;
+use shader::{Program, Shader};
 
 const WIDTH: u32 = 1080;
 const HEIGHT: u32 = 720;
@@ -55,15 +56,38 @@ pub fn run() {
         100.0,
     );
 
-    // CUBE
+    // CREATE SHADER PROGRAM
+    let vertex_shader =
+        Shader::from_vertex_source(&gl, &resources, "assets/shaders/shader.vert").unwrap();
+    let fragment_shader =
+        Shader::from_fragment_source(&gl, &resources, "assets/shaders/shader.frag").unwrap();
+    let program = Program::from_shaders(&gl, &[vertex_shader, fragment_shader]).unwrap();
 
-    // let texture = Texture::load(&gl, &resources, "assets/textures/texture.png").unwrap();
-    // let cube_mesh = Mesh::create_cube(&gl);
-    // let cube = Model::new(vec![(cube_mesh, 0)], vec![Material::new(texture)]);
+    program.set_global_uniforms();
 
     // --- TEMP ---
-    let model_3d = resources.load_model(&gl, "assets/models/stone_cube/scene.gltf");
+    let model_3d = resources.load_model(&gl, "assets/models/stone_cube/scene.gltf", &program);
     // ------------
+
+    // GLOBAL UNIFORMS
+    let mut ubo = 0;
+    unsafe {
+        gl.GenBuffers(1, &mut ubo);
+        gl.BindBuffer(gl::UNIFORM_BUFFER, ubo);
+        gl.BufferData(
+            gl::UNIFORM_BUFFER,
+            2 * std::mem::size_of::<cgmath::Matrix4<f32>>() as isize,
+            std::ptr::null(),
+            gl::STATIC_DRAW,
+        );
+        gl.BindBufferRange(
+            gl::UNIFORM_BUFFER,
+            0,
+            ubo,
+            0,
+            2 * std::mem::size_of::<cgmath::Matrix4<f32>>() as isize,
+        );
+    }
 
     // ENABLE DEPTH TESTING
 
@@ -76,13 +100,23 @@ pub fn run() {
             gl.ClearColor(0.3, 0.4, 0.6, 1.0);
             gl.Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
+            gl.BufferSubData(
+                gl::UNIFORM_BUFFER,
+                0,
+                std::mem::size_of::<cgmath::Matrix4<f32>>() as isize,
+                camera.get_projection().as_ptr().cast(),
+            );
+
+            gl.BufferSubData(
+                gl::UNIFORM_BUFFER,
+                std::mem::size_of::<cgmath::Matrix4<f32>>() as isize,
+                std::mem::size_of::<cgmath::Matrix4<f32>>() as isize,
+                camera.get_view().as_ptr().cast(),
+            );
+
             let model_matrix = Matrix4::from_angle_x(cgmath::Deg(-90.0));
 
-            model_3d.draw(&[
-                ("model", model_matrix),
-                ("view", camera.get_view()),
-                ("projection", camera.get_projection()),
-            ]);
+            model_3d.draw(&[("model", model_matrix)]);
 
             // let model = Matrix4::from_translation((-2.5, 0.0, 0.0).into());
             // let uniform_model_location = shader_program.get_uniform_location("model").unwrap();
