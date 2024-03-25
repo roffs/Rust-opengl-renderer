@@ -14,7 +14,6 @@ use glfw::{Context, OpenGlProfileHint, WindowHint};
 use camera::Camera;
 
 use resources::ResourceLoader;
-use shader::{Program, Shader};
 
 const WIDTH: u32 = 1080;
 const HEIGHT: u32 = 720;
@@ -46,21 +45,6 @@ pub fn run() {
 
     let gl = gl::Gl::load_with(|s| window.get_proc_address(s) as *const _);
 
-    // SHADER PROGRAM
-
-    let vertex_shader =
-        Shader::from_vertex_source(&gl, &resources, "assets/shaders/shader.vert").unwrap();
-    let fragment_shader =
-        Shader::from_fragment_source(&gl, &resources, "assets/shaders/shader.frag").unwrap();
-
-    let shader_program = Program::from_shaders(&gl, &[vertex_shader, fragment_shader]).unwrap();
-    shader_program.use_program();
-
-    // SET UNIFORMS
-
-    // let uniform_color_location = shader_program.get_uniform_location("ourColor").unwrap();
-    // shader_program.set_uniform_4f(uniform_color_location, (0.0, 1.0, 0.0, 1.0));
-
     let mut camera = Camera::new(
         (0.0, 3.0, 3.0),
         (0.0, -1.0, -1.0),
@@ -88,27 +72,22 @@ pub fn run() {
     // EVENT LOOP
 
     while !window.should_close() {
-        let uniform_view_location = shader_program.get_uniform_location("view").unwrap();
-        shader_program.set_uniform_matrix_4fv(uniform_view_location, camera.get_view());
-
-        let uniform_projection_location =
-            shader_program.get_uniform_location("projection").unwrap();
-        shader_program.set_uniform_matrix_4fv(uniform_projection_location, camera.get_projection());
-
         unsafe {
             gl.ClearColor(0.3, 0.4, 0.6, 1.0);
             gl.Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-            let model = Matrix4::from_angle_x(cgmath::Deg(-90.0));
-            let uniform_model_location = shader_program.get_uniform_location("model").unwrap();
-            shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
+            let model_matrix = Matrix4::from_angle_x(cgmath::Deg(-90.0));
 
-            model_3d.draw();
+            model_3d.draw(&[
+                ("model", model_matrix),
+                ("view", camera.get_view()),
+                ("projection", camera.get_projection()),
+            ]);
 
-            let model = Matrix4::from_translation((-2.5, 0.0, 0.0).into());
-            let uniform_model_location = shader_program.get_uniform_location("model").unwrap();
-            shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
-            // cube.draw();
+            // let model = Matrix4::from_translation((-2.5, 0.0, 0.0).into());
+            // let uniform_model_location = shader_program.get_uniform_location("model").unwrap();
+            // shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
+            // // cube.draw();
         }
 
         glfw.poll_events();

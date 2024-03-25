@@ -61,8 +61,8 @@ impl Texture {
     pub fn bind(&self, slot: gl::types::GLenum) {
         unsafe {
             self.gl.ActiveTexture(slot);
-            self.gl.BindTexture(gl::TEXTURE_2D, self.id)
-        };
+            self.gl.BindTexture(gl::TEXTURE_2D, self.id);
+        }
     }
 }
 

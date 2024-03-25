@@ -9,6 +9,8 @@ use image::{io::Reader, ImageError};
 use crate::material::Material;
 use crate::mesh::{Mesh, MeshVertex};
 use crate::model::Model;
+use crate::shader::Program;
+use crate::shader::Shader;
 use crate::texture::Texture;
 
 #[derive(Debug)]
@@ -111,7 +113,6 @@ impl ResourceLoader {
         }
 
         // Load materials
-        let textures: Vec<_> = gltf.textures().collect();
         let mut materials = Vec::new();
 
         let load_texture = |texture: &gltf::Texture| {
@@ -140,16 +141,24 @@ impl ResourceLoader {
         };
 
         let load_material = |material: gltf::Material| {
-            let texture_index = material
+            let vertex_shader =
+                Shader::from_vertex_source(gl, self, "assets/shaders/shader.vert").unwrap();
+            let fragment_shader =
+                Shader::from_fragment_source(gl, self, "assets/shaders/shader.frag").unwrap();
+
+            let program = Program::from_shaders(gl, &[vertex_shader, fragment_shader]).unwrap();
+
+            let diffuse = material
                 .pbr_metallic_roughness()
                 .base_color_texture()
                 .unwrap()
-                .tex_coord();
+                .texture();
+            let diffuse = load_texture(&diffuse);
 
-            let texture = textures.get(texture_index as usize).unwrap();
-            let texture = load_texture(texture);
+            let normal = material.normal_texture().unwrap().texture();
+            let normal = load_texture(&normal);
 
-            Material::new(texture)
+            Material::new(program, diffuse, normal)
         };
 
         for material in gltf.materials() {
