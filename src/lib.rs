@@ -11,7 +11,7 @@ use std::path::Path;
 use cgmath::{Matrix, Matrix4};
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 
-use camera::Camera;
+use camera::{Camera, CameraController};
 
 use resources::ResourceLoader;
 use shader::{Program, Shader};
@@ -46,6 +46,7 @@ pub fn run() {
 
     let gl = gl::Gl::load_with(|s| window.get_proc_address(s) as *const _);
 
+    let camera_controller = CameraController::new(10.0);
     let mut camera = Camera::new(
         (0.0, 3.0, 3.0),
         (0.0, -1.0, -1.0),
@@ -95,7 +96,14 @@ pub fn run() {
 
     // EVENT LOOP
 
+    let mut movement_direction = cgmath::vec3(0.0, 0.0, 0.0);
+    let mut initial_time = 0.0;
+
     while !window.should_close() {
+        let current_time = glfw.get_time() as f32;
+        let delta_time = current_time - initial_time;
+        initial_time = current_time;
+
         unsafe {
             gl.ClearColor(0.3, 0.4, 0.6, 1.0);
             gl.Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
@@ -117,11 +125,6 @@ pub fn run() {
             let model_matrix = Matrix4::from_angle_x(cgmath::Deg(-90.0));
 
             model_3d.draw(&[("model", model_matrix)]);
-
-            // let model = Matrix4::from_translation((-2.5, 0.0, 0.0).into());
-            // let uniform_model_location = shader_program.get_uniform_location("model").unwrap();
-            // shader_program.set_uniform_matrix_4fv(uniform_model_location, model);
-            // // cube.draw();
         }
 
         glfw.poll_events();
@@ -132,20 +135,27 @@ pub fn run() {
                 glfw::WindowEvent::Key(glfw::Key::Escape, _, glfw::Action::Press, _) => {
                     window.set_should_close(true)
                 }
-                glfw::WindowEvent::Key(glfw::Key::A, _, glfw::Action::Press, _) => {
-                    camera.position.x -= 0.1;
-                }
-                glfw::WindowEvent::Key(glfw::Key::D, _, glfw::Action::Press, _) => {
-                    camera.position.x += 0.1;
-                }
-                glfw::WindowEvent::Key(glfw::Key::W, _, glfw::Action::Press, _) => {
-                    camera.position.y += 0.1;
-                }
-                glfw::WindowEvent::Key(glfw::Key::S, _, glfw::Action::Press, _) => {
-                    camera.position.y -= 0.1;
-                }
+                glfw::WindowEvent::Key(key, _, glfw::Action::Press, _) => match key {
+                    glfw::Key::W => movement_direction.z -= 0.1,
+                    glfw::Key::A => movement_direction.x -= 0.1,
+                    glfw::Key::S => movement_direction.z += 0.1,
+                    glfw::Key::D => movement_direction.x += 0.1,
+                    glfw::Key::Space => movement_direction.y += 0.1,
+                    glfw::Key::LeftShift => movement_direction.y -= 0.1,
+                    _ => {}
+                },
+                glfw::WindowEvent::Key(key, _, glfw::Action::Release, _) => match key {
+                    glfw::Key::W => movement_direction.z += 0.1,
+                    glfw::Key::A => movement_direction.x += 0.1,
+                    glfw::Key::S => movement_direction.z -= 0.1,
+                    glfw::Key::D => movement_direction.x -= 0.1,
+                    glfw::Key::Space => movement_direction.y -= 0.1,
+                    glfw::Key::LeftShift => movement_direction.y += 0.1,
+                    _ => {}
+                },
                 _ => {}
             }
         }
+        camera_controller.translate(&mut camera, movement_direction * delta_time);
     }
 }

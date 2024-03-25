@@ -1,4 +1,8 @@
+mod camera_controller;
+
 use cgmath::{perspective, Deg, InnerSpace, Matrix4, Point3, Vector3};
+
+pub use camera_controller::CameraController;
 
 pub struct Camera {
     pub position: Point3<f32>,
