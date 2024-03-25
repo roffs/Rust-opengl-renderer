@@ -8,7 +8,7 @@ mod texture;
 
 use std::path::Path;
 
-use cgmath::{Matrix, Matrix4};
+use cgmath::{InnerSpace, Matrix, Matrix4};
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 
 use camera::{Camera, CameraController};
@@ -53,7 +53,7 @@ pub fn run() {
         (0.0, 1.0, 0.0),
         45.0,
         WIDTH as f32 / HEIGHT as f32,
-        0.1,
+        1.0,
         100.0,
     );
 
@@ -136,26 +136,32 @@ pub fn run() {
                     window.set_should_close(true)
                 }
                 glfw::WindowEvent::Key(key, _, glfw::Action::Press, _) => match key {
-                    glfw::Key::W => movement_direction.z -= 0.1,
-                    glfw::Key::A => movement_direction.x -= 0.1,
-                    glfw::Key::S => movement_direction.z += 0.1,
-                    glfw::Key::D => movement_direction.x += 0.1,
-                    glfw::Key::Space => movement_direction.y += 0.1,
-                    glfw::Key::LeftShift => movement_direction.y -= 0.1,
+                    glfw::Key::W => movement_direction.z -= 1.0,
+                    glfw::Key::A => movement_direction.x -= 1.0,
+                    glfw::Key::S => movement_direction.z += 1.0,
+                    glfw::Key::D => movement_direction.x += 1.0,
+                    glfw::Key::Space => movement_direction.y += 1.0,
+                    glfw::Key::LeftShift => movement_direction.y -= 1.0,
                     _ => {}
                 },
                 glfw::WindowEvent::Key(key, _, glfw::Action::Release, _) => match key {
-                    glfw::Key::W => movement_direction.z += 0.1,
-                    glfw::Key::A => movement_direction.x += 0.1,
-                    glfw::Key::S => movement_direction.z -= 0.1,
-                    glfw::Key::D => movement_direction.x -= 0.1,
-                    glfw::Key::Space => movement_direction.y -= 0.1,
-                    glfw::Key::LeftShift => movement_direction.y += 0.1,
+                    glfw::Key::W => movement_direction.z += 1.0,
+                    glfw::Key::A => movement_direction.x += 1.0,
+                    glfw::Key::S => movement_direction.z -= 1.0,
+                    glfw::Key::D => movement_direction.x -= 1.0,
+                    glfw::Key::Space => movement_direction.y -= 1.0,
+                    glfw::Key::LeftShift => movement_direction.y += 1.0,
                     _ => {}
                 },
                 _ => {}
             }
         }
-        camera_controller.translate(&mut camera, movement_direction * delta_time);
+
+        let normalized_movement_direction = match movement_direction.magnitude2() > 0.0 {
+            true => movement_direction.normalize(),
+            false => movement_direction,
+        };
+
+        camera_controller.translate(&mut camera, normalized_movement_direction * delta_time);
     }
 }
