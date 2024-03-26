@@ -3,6 +3,9 @@ use std::fs;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
+use cgmath::Point3;
+use cgmath::Vector2;
+use cgmath::Vector3;
 use image::ImageBuffer;
 use image::{io::Reader, ImageError};
 
@@ -180,23 +183,29 @@ impl ResourceLoader {
             for primitive in mesh.primitives() {
                 let reader = primitive.reader(|buffer| Some(&buffer_data[buffer.index()]));
 
-                // Read vertices and their attributes
-                if let (Some(positions), Some(uvs)) = (
-                    reader.read_positions(),
-                    reader.read_tex_coords(0).map(|v| v.into_f32()),
-                ) {
-                    positions.zip(uvs).for_each(|(pos, uv)| {
-                        mesh_vertices
-                            .push(MeshVertex::new((pos[0], pos[1], pos[2]), (uv[0], uv[1])))
-                    });
-                }
+                // TODO: better error handling if we can not find some attribute or indices
+
+                // Read vertex attributes
+                let positions = reader.read_positions().unwrap();
+                let uvs = reader.read_tex_coords(0).map(|v| v.into_f32()).unwrap();
+                let normals = reader.read_normals().unwrap();
+                let tangents = reader.read_tangents().unwrap();
+
+                positions.zip(uvs).zip(normals).zip(tangents).for_each(
+                    |(((pos, uv), normal), tangent)| {
+                        let normal: Vector3<f32> = normal.into();
+                        let tangent: Vector3<f32> = [tangent[0], tangent[1], tangent[2]].into();
+                        let bitangent = normal.cross(tangent);
+
+                        mesh_vertices.push(MeshVertex::new(pos, uv, normal, tangent, bitangent));
+                    },
+                );
 
                 // Read vertex indices
-                if let Some(indices) = reader.read_indices() {
-                    indices
-                        .into_u32()
-                        .for_each(|index| mesh_indices.push(index as i32));
-                }
+                let indices = reader.read_indices().unwrap();
+                indices
+                    .into_u32()
+                    .for_each(|index| mesh_indices.push(index as i32));
             }
 
             meshes.push((Mesh::create(gl, mesh_vertices, mesh_indices), 0));

@@ -2,6 +2,9 @@
 
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec2 aNorm;
+layout (location = 3) in vec2 aTangent;
+layout (location = 4) in vec2 aBitagent;
 
 uniform mat4 model;
 
