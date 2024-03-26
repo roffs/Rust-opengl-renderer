@@ -8,7 +8,7 @@ mod texture;
 
 use std::path::Path;
 
-use cgmath::{Deg, InnerSpace, Matrix, Matrix4};
+use cgmath::{Deg, InnerSpace, Matrix, Matrix4, Point3, SquareMatrix, Vector3};
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 
 use camera::{Camera, CameraController};
@@ -55,7 +55,7 @@ pub fn run() {
         Deg(0.0),
         45.0,
         WIDTH as f32 / HEIGHT as f32,
-        1.0,
+        0.01,
         100.0,
     );
 
@@ -128,8 +128,14 @@ pub fn run() {
             );
 
             let model_matrix = Matrix4::from_angle_x(cgmath::Deg(-90.0));
+            let normal_matrix = model_matrix.invert().unwrap().transpose();
 
-            model_3d.draw(&[("model", model_matrix)]);
+            let light_pos = Point3::new(-1.5, 4.0, 0.0);
+
+            model_3d.draw(
+                &[("model", model_matrix), ("normalMatrix", normal_matrix)],
+                &[("lightPos", light_pos)],
+            );
         }
 
         glfw.poll_events();

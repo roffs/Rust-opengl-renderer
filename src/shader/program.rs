@@ -85,6 +85,13 @@ impl Program {
         };
     }
 
+    pub fn set_uniform_3f(&self, name: &str, value: (f32, f32, f32)) {
+        unsafe {
+            let location = self.get_uniform_location(name).unwrap();
+            self.gl.Uniform3f(location, value.0, value.1, value.2)
+        };
+    }
+
     pub fn set_uniform_matrix_4fv(&self, name: &str, value: cgmath::Matrix4<f32>) {
         unsafe {
             let location = self.get_uniform_location(name).unwrap();

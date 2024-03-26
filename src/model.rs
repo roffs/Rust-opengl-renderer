@@ -13,11 +13,17 @@ impl<'a> Model<'a> {
         Model { meshes, materials }
     }
 
-    pub fn draw(&self, uniforms: &[(&str, cgmath::Matrix4<f32>)]) {
+    // TODO: Improve how we handle the uniforms here
+    pub fn draw<T: Into<(f32, f32, f32)> + Copy>(
+        &self,
+        mat4f_uniforms: &[(&str, cgmath::Matrix4<f32>)],
+        vec3f_uniforms: &[(&str, T)],
+    ) {
         for (mesh, material_index) in &self.meshes {
             let material = self.materials.get(*material_index as usize).unwrap();
             material.use_program();
-            material.set_uniforms(uniforms);
+            material.set_mat4f_uniforms(mat4f_uniforms);
+            material.set_vec3f_uniforms(vec3f_uniforms);
             mesh.draw(material);
         }
     }
