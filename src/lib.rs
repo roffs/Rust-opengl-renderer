@@ -130,11 +130,11 @@ pub fn run() {
             let model_matrix = Matrix4::from_angle_x(cgmath::Deg(-90.0));
             let normal_matrix = model_matrix.invert().unwrap().transpose();
 
-            let light_pos = Point3::new(-1.5, 4.0, 0.0);
+            let light_pos = Point3::new(-1.5, 1.5, 1.5);
 
             model_3d.draw(
                 &[("model", model_matrix), ("normalMatrix", normal_matrix)],
-                &[("lightPos", light_pos)],
+                &[("lightPos", light_pos), ("viewPos", camera.get_position())],
             );
         }
 

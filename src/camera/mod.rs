@@ -55,6 +55,10 @@ impl Camera {
         }
     }
 
+    pub fn get_position(&self) -> cgmath::Point3<f32> {
+        self.position
+    }
+
     pub fn get_view(&self) -> cgmath::Matrix4<f32> {
         Matrix4::look_to_rh(self.position, self.look_dir, self.up)
     }
