@@ -1,14 +1,22 @@
 mod camera_controller;
+mod utils;
 
-use cgmath::{perspective, Angle, Deg, Matrix4, Point3, Rad, Vector3};
+use cgmath::{perspective, Deg, Matrix4, Point3, Rad, Vector3};
 
 pub use camera_controller::CameraController;
+
+use self::utils::calculate_local_directions;
 
 pub struct Camera {
     pub(self) position: Point3<f32>,
     pub(self) yaw: Rad<f32>,
     pub(self) pitch: Rad<f32>,
-    up: Vector3<f32>,
+
+    pub(self) look_dir: Vector3<f32>,
+    pub(self) right: Vector3<f32>,
+    pub(self) up: Vector3<f32>,
+    pub(self) forward: Vector3<f32>,
+
     fovy: f32,
     aspect: f32,
     near: f32,
@@ -27,11 +35,19 @@ impl Camera {
         near: f32,
         far: f32,
     ) -> Camera {
+        let yaw: Rad<f32> = yaw.into();
+        let pitch: Rad<f32> = pitch.into();
+
+        let (look_dir, up, right, forward) = calculate_local_directions(yaw, pitch);
+
         Camera {
             position: Point3::from(position),
-            yaw: yaw.into(),
-            pitch: pitch.into(),
-            up: Vector3::new(0.0, 1.0, 0.0),
+            yaw,
+            pitch,
+            look_dir,
+            right,
+            up,
+            forward,
             fovy,
             aspect,
             near,
@@ -40,13 +56,19 @@ impl Camera {
     }
 
     pub fn get_view(&self) -> cgmath::Matrix4<f32> {
-        let x = self.yaw.cos() * self.pitch.cos();
-        let y = self.pitch.sin();
-        let z = self.yaw.sin() * self.pitch.cos();
-        Matrix4::look_to_rh(self.position, Vector3::from((x, y, z)), self.up)
+        Matrix4::look_to_rh(self.position, self.look_dir, self.up)
     }
 
     pub fn get_projection(&self) -> cgmath::Matrix4<f32> {
         perspective(Deg(self.fovy), self.aspect, self.near, self.far)
+    }
+
+    pub(self) fn update_directions(&mut self) {
+        let (look_dir, up, right, forward) = calculate_local_directions(self.yaw, self.pitch);
+
+        self.look_dir = look_dir;
+        self.up = up;
+        self.right = right;
+        self.forward = forward;
     }
 }

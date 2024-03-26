@@ -98,6 +98,7 @@ pub fn run() {
 
     // EVENT LOOP
 
+    // x respresents forward movement, y side movement and z vertical movement
     let mut movement_direction = cgmath::vec3(0.0, 0.0, 0.0);
     let mut initial_mouse_pos = window.get_cursor_pos();
 
@@ -139,19 +140,19 @@ pub fn run() {
                 glfw::WindowEvent::Key(key, _, action, _) => match (key, action) {
                     (glfw::Key::Escape, glfw::Action::Press) => window.set_should_close(true),
                     (key, glfw::Action::Press) => match key {
-                        glfw::Key::W => movement_direction.z -= 1.0,
-                        glfw::Key::A => movement_direction.x -= 1.0,
-                        glfw::Key::S => movement_direction.z += 1.0,
-                        glfw::Key::D => movement_direction.x += 1.0,
+                        glfw::Key::W => movement_direction.x += 1.0,
+                        glfw::Key::A => movement_direction.z -= 1.0,
+                        glfw::Key::S => movement_direction.x -= 1.0,
+                        glfw::Key::D => movement_direction.z += 1.0,
                         glfw::Key::Space => movement_direction.y += 1.0,
                         glfw::Key::LeftShift => movement_direction.y -= 1.0,
                         _ => {}
                     },
                     (key, glfw::Action::Release) => match key {
-                        glfw::Key::W => movement_direction.z += 1.0,
-                        glfw::Key::A => movement_direction.x += 1.0,
-                        glfw::Key::S => movement_direction.z -= 1.0,
-                        glfw::Key::D => movement_direction.x -= 1.0,
+                        glfw::Key::W => movement_direction.x -= 1.0,
+                        glfw::Key::A => movement_direction.z += 1.0,
+                        glfw::Key::S => movement_direction.x += 1.0,
+                        glfw::Key::D => movement_direction.z -= 1.0,
                         glfw::Key::Space => movement_direction.y -= 1.0,
                         glfw::Key::LeftShift => movement_direction.y += 1.0,
                         _ => {}

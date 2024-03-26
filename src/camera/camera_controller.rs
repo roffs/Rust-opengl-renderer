@@ -1,6 +1,6 @@
 use cgmath::Deg;
 
-use super::Camera;
+use super::{calculate_local_directions, Camera};
 
 pub struct CameraController {
     move_speed: f32,
@@ -15,7 +15,10 @@ impl CameraController {
         }
     }
 
-    pub fn translate(&self, camera: &mut Camera, direction: cgmath::Vector3<f32>) {
+    pub fn translate(&self, camera: &mut Camera, local_direction: cgmath::Vector3<f32>) {
+        let direction = (camera.forward * local_direction.x)
+            + (camera.up * local_direction.y)
+            + (camera.right * local_direction.z);
         camera.position += direction * self.move_speed;
     }
 
@@ -24,5 +27,7 @@ impl CameraController {
 
         camera.yaw += Deg(yaw * self.rotation_speed).into();
         camera.pitch -= Deg(pitch * self.rotation_speed).into();
+
+        camera.update_directions();
     }
 }
