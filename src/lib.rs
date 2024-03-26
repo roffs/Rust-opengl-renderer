@@ -8,7 +8,7 @@ mod texture;
 
 use std::path::Path;
 
-use cgmath::{InnerSpace, Matrix, Matrix4};
+use cgmath::{Deg, InnerSpace, Matrix, Matrix4};
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 
 use camera::{Camera, CameraController};
@@ -39,6 +39,8 @@ pub fn run() {
 
     window.make_current();
     window.set_key_polling(true);
+    window.set_cursor_pos_polling(true);
+    window.set_cursor_mode(glfw::CursorMode::Disabled);
 
     // INIT RESOURCES LOADER
 
@@ -46,11 +48,11 @@ pub fn run() {
 
     let gl = gl::Gl::load_with(|s| window.get_proc_address(s) as *const _);
 
-    let camera_controller = CameraController::new(10.0);
+    let camera_controller = CameraController::new(10.0, 0.2);
     let mut camera = Camera::new(
-        (0.0, 3.0, 3.0),
-        (0.0, -1.0, -1.0),
-        (0.0, 1.0, 0.0),
+        (0.0, 0.0, 3.0),
+        Deg(-90.0),
+        Deg(0.0),
         45.0,
         WIDTH as f32 / HEIGHT as f32,
         1.0,
@@ -97,6 +99,8 @@ pub fn run() {
     // EVENT LOOP
 
     let mut movement_direction = cgmath::vec3(0.0, 0.0, 0.0);
+    let mut initial_mouse_pos = window.get_cursor_pos();
+
     let mut initial_time = 0.0;
 
     while !window.should_close() {
@@ -132,27 +136,33 @@ pub fn run() {
 
         for (_, event) in glfw::flush_messages(&events) {
             match event {
-                glfw::WindowEvent::Key(glfw::Key::Escape, _, glfw::Action::Press, _) => {
-                    window.set_should_close(true)
+                glfw::WindowEvent::Key(key, _, action, _) => match (key, action) {
+                    (glfw::Key::Escape, glfw::Action::Press) => window.set_should_close(true),
+                    (key, glfw::Action::Press) => match key {
+                        glfw::Key::W => movement_direction.z -= 1.0,
+                        glfw::Key::A => movement_direction.x -= 1.0,
+                        glfw::Key::S => movement_direction.z += 1.0,
+                        glfw::Key::D => movement_direction.x += 1.0,
+                        glfw::Key::Space => movement_direction.y += 1.0,
+                        glfw::Key::LeftShift => movement_direction.y -= 1.0,
+                        _ => {}
+                    },
+                    (key, glfw::Action::Release) => match key {
+                        glfw::Key::W => movement_direction.z += 1.0,
+                        glfw::Key::A => movement_direction.x += 1.0,
+                        glfw::Key::S => movement_direction.z -= 1.0,
+                        glfw::Key::D => movement_direction.x -= 1.0,
+                        glfw::Key::Space => movement_direction.y -= 1.0,
+                        glfw::Key::LeftShift => movement_direction.y += 1.0,
+                        _ => {}
+                    },
+                    _ => {}
+                },
+                glfw::WindowEvent::CursorPos(x, y) => {
+                    let (x_diff, y_diff) = (x - initial_mouse_pos.0, y - initial_mouse_pos.1);
+                    camera_controller.rotate(&mut camera, (x_diff as f32, y_diff as f32));
+                    initial_mouse_pos = (x, y);
                 }
-                glfw::WindowEvent::Key(key, _, glfw::Action::Press, _) => match key {
-                    glfw::Key::W => movement_direction.z -= 1.0,
-                    glfw::Key::A => movement_direction.x -= 1.0,
-                    glfw::Key::S => movement_direction.z += 1.0,
-                    glfw::Key::D => movement_direction.x += 1.0,
-                    glfw::Key::Space => movement_direction.y += 1.0,
-                    glfw::Key::LeftShift => movement_direction.y -= 1.0,
-                    _ => {}
-                },
-                glfw::WindowEvent::Key(key, _, glfw::Action::Release, _) => match key {
-                    glfw::Key::W => movement_direction.z += 1.0,
-                    glfw::Key::A => movement_direction.x += 1.0,
-                    glfw::Key::S => movement_direction.z -= 1.0,
-                    glfw::Key::D => movement_direction.x -= 1.0,
-                    glfw::Key::Space => movement_direction.y -= 1.0,
-                    glfw::Key::LeftShift => movement_direction.y += 1.0,
-                    _ => {}
-                },
                 _ => {}
             }
         }
