@@ -1,6 +1,4 @@
-use cgmath::Matrix;
-
-use crate::shader::Shader;
+use crate::{shader::Shader, uniform::Uniform};
 
 pub struct Program {
     gl: gl::Gl,
@@ -59,51 +57,9 @@ impl Program {
         };
     }
 
-    pub fn get_uniform_location(&self, name: &str) -> Result<gl::types::GLint, String> {
-        let uniform_cname =
-            std::ffi::CString::new(name).expect("expected uniform name to have no nul bytes");
-
-        let location = unsafe {
-            self.gl
-                .GetUniformLocation(self.id, uniform_cname.as_ptr().cast())
-        };
-
-        match location {
-            -1 => Err(format!(
-                "Uniform location \"{}\" was not found in program with id {}",
-                name, self.id
-            )),
-            _ => Ok(location),
+    pub fn set_uniforms(&self, uniforms: &Vec<Box<dyn Uniform>>) {
+        for uniform in uniforms {
+            uniform.set(&self.gl, self.id);
         }
-    }
-
-    pub fn set_uniform_4f(&self, name: &str, value: (f32, f32, f32, f32)) {
-        unsafe {
-            let location = self.get_uniform_location(name).unwrap();
-            self.gl
-                .Uniform4f(location, value.0, value.1, value.2, value.3)
-        };
-    }
-
-    pub fn set_uniform_3f(&self, name: &str, value: (f32, f32, f32)) {
-        unsafe {
-            let location = self.get_uniform_location(name).unwrap();
-            self.gl.Uniform3f(location, value.0, value.1, value.2)
-        };
-    }
-
-    pub fn set_uniform_matrix_4fv(&self, name: &str, value: cgmath::Matrix4<f32>) {
-        unsafe {
-            let location = self.get_uniform_location(name).unwrap();
-            self.gl
-                .UniformMatrix4fv(location, 1, gl::FALSE, value.as_ptr().cast())
-        };
-    }
-
-    pub fn set_int(&self, name: &str, value: i32) {
-        unsafe {
-            let location = self.get_uniform_location(name).unwrap();
-            self.gl.Uniform1i(location, value)
-        };
     }
 }

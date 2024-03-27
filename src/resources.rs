@@ -148,14 +148,6 @@ impl ResourceLoader {
         };
 
         let load_material = |material: gltf::Material| {
-            // let vertex_shader =
-            //     Shader::from_vertex_source(gl, self, "assets/shaders/shader.vert").unwrap();
-            // let fragment_shader =
-            //     Shader::from_fragment_source(gl, self, "assets/shaders/shader.frag").unwrap();
-
-            // let program = Program::from_shaders(gl, &[vertex_shader, fragment_shader]).unwrap();
-            // program.set_global_uniforms();
-
             let diffuse = material
                 .pbr_metallic_roughness()
                 .base_color_texture()

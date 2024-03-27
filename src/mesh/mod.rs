@@ -1,8 +1,9 @@
 mod primitives;
 mod vertex;
 
+use crate::material::Material;
+
 pub use self::vertex::{MeshVertex, Vertex};
-pub use crate::material::Material;
 
 pub struct Mesh<T: Vertex> {
     gl: gl::Gl,
@@ -59,13 +60,11 @@ impl<T: Vertex> Mesh<T> {
         }
     }
 
-    pub fn draw(&self, material: &Material) {
+    pub fn draw(&self) {
         unsafe {
             self.gl.BindVertexArray(self.vao);
             self.gl.BindBuffer(gl::ARRAY_BUFFER, self.vbo);
             self.gl.BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.ebo);
-
-            material.bind();
 
             self.gl.DrawElements(
                 gl::TRIANGLES,

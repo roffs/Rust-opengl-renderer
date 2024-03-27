@@ -5,16 +5,18 @@ mod model;
 mod resources;
 mod shader;
 mod texture;
+mod uniform;
 
 use std::path::Path;
 
-use cgmath::{Deg, InnerSpace, Matrix, Matrix4, Point3, SquareMatrix, Vector3};
+use cgmath::{Deg, InnerSpace, Matrix, Matrix4, Point3, SquareMatrix};
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 
 use camera::{Camera, CameraController};
 
 use resources::ResourceLoader;
 use shader::{Program, Shader};
+use uniform::{Uniform, Uniform3f, UniformMat4f};
 
 const WIDTH: u32 = 1080;
 const HEIGHT: u32 = 720;
@@ -132,10 +134,14 @@ pub fn run() {
 
             let light_pos = Point3::new(-1.5, 1.5, 1.5);
 
-            model_3d.draw(
-                &[("model", model_matrix), ("normalMatrix", normal_matrix)],
-                &[("lightPos", light_pos), ("viewPos", camera.get_position())],
-            );
+            let uniforms: Vec<Box<dyn Uniform>> = vec![
+                UniformMat4f::new("model", model_matrix),
+                UniformMat4f::new("normalMatrix", normal_matrix),
+                Uniform3f::new("lightPos", light_pos),
+                Uniform3f::new("viewPos", camera.get_position()),
+            ];
+
+            model_3d.draw(uniforms);
         }
 
         glfw.poll_events();

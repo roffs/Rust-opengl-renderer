@@ -49,14 +49,14 @@ impl Texture {
         Ok(Texture::new(gl, img))
     }
 
-    pub fn from_binary_data(gl: &gl::Gl, data: &[u8]) -> Result<Texture, String> {
-        let mut reader = image::io::Reader::new(std::io::Cursor::new(data));
-        reader.set_format(image::ImageFormat::Png);
-        // reader.no_limits();
-        let img = reader.decode().map_err(|_| "Hey")?.flipv().to_rgba8();
+    // pub fn from_binary_data(gl: &gl::Gl, data: &[u8]) -> Result<Texture, String> {
+    //     let mut reader = image::io::Reader::new(std::io::Cursor::new(data));
+    //     reader.set_format(image::ImageFormat::Png);
+    //     // reader.no_limits();
+    //     let img = reader.decode().map_err(|_| "Hey")?.flipv().to_rgba8();
 
-        Ok(Texture::new(gl, img))
-    }
+    //     Ok(Texture::new(gl, img))
+    // }
 
     pub fn bind(&self, slot: gl::types::GLenum) {
         unsafe {
