@@ -76,7 +76,12 @@ pub fn run() {
 
     // GLOBAL UNIFORMS
     let matrix4_size = std::mem::size_of::<cgmath::Matrix4<f32>>() as isize;
-    let sub_uniforms = &[("projection", matrix4_size), ("view", matrix4_size)];
+    let sub_uniforms = &[
+        ("projection", matrix4_size),
+        ("view", matrix4_size),
+        ("model", matrix4_size),
+        ("normalMatrix", matrix4_size),
+    ];
 
     let matrix_ubo = UniformBufferObject::new(&gl, sub_uniforms);
     matrix_ubo.bind_to_layout(0);
@@ -102,17 +107,17 @@ pub fn run() {
             gl.ClearColor(0.3, 0.4, 0.6, 1.0);
             gl.Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
+            let model_matrix = Matrix4::<f32>::from_angle_x(cgmath::Deg(-90.0));
+            let normal_matrix = model_matrix.invert().unwrap().transpose();
+
             matrix_ubo.write_sub_data("projection", camera.get_projection().as_ptr().cast());
             matrix_ubo.write_sub_data("view", camera.get_view().as_ptr().cast());
-
-            let model_matrix = Matrix4::from_angle_x(cgmath::Deg(-90.0));
-            let normal_matrix = model_matrix.invert().unwrap().transpose();
+            matrix_ubo.write_sub_data("model", model_matrix.as_ptr().cast());
+            matrix_ubo.write_sub_data("normalMatrix", normal_matrix.as_ptr().cast());
 
             let light_pos = Point3::new(-1.5, 1.5, 1.5);
 
             let uniforms: Vec<Box<dyn Uniform>> = vec![
-                UniformMat4f::new("model", model_matrix),
-                UniformMat4f::new("normalMatrix", normal_matrix),
                 Uniform3f::new("lightPos", light_pos),
                 Uniform3f::new("viewPos", camera.get_position()),
             ];

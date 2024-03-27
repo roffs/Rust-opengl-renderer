@@ -6,13 +6,12 @@ layout (location = 2) in vec3 aNorm;
 layout (location = 3) in vec3 aTangent;
 layout (location = 4) in vec3 aBitangent;
 
-uniform mat4 model;
-uniform mat4 normalMatrix;
-
 layout (std140, binding = 0) uniform Matrices
 {
     mat4 projection;
     mat4 view;
+    mat4 model;
+    mat4 normalMatrix;
 };
 
 out vec3 FragPos;
