@@ -1,5 +1,10 @@
 #version 460 core
 
+layout (std140, binding = 1) uniform Light
+{
+    vec3 lightPos;
+};
+
 in vec3 FragPos;
 in vec2 TexCoord;
 in mat3 TBN;
@@ -7,7 +12,6 @@ in mat3 TBN;
 uniform sampler2D diffuseTexture;
 uniform sampler2D normalTexture;
 
-uniform vec3 lightPos;
 uniform vec3 viewPos;
 
 out vec4 FragColor;

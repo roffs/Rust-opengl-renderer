@@ -8,7 +8,11 @@ pub struct UniformBufferObject<'a> {
 }
 
 impl<'a> UniformBufferObject<'a> {
-    pub fn new(gl: &gl::Gl, sub_uniforms: &[(&'a str, isize)]) -> UniformBufferObject<'a> {
+    pub fn new(
+        gl: &gl::Gl,
+        binding: u32,
+        sub_uniforms: &[(&'a str, isize)],
+    ) -> UniformBufferObject<'a> {
         let mut id = 0;
 
         let total_size = sub_uniforms.iter().map(|(_, size)| size).sum();
@@ -22,6 +26,8 @@ impl<'a> UniformBufferObject<'a> {
                 std::ptr::null(),
                 gl::STATIC_DRAW,
             );
+
+            gl.BindBufferRange(gl::UNIFORM_BUFFER, binding, id, 0, total_size)
         };
 
         UniformBufferObject {
@@ -30,13 +36,6 @@ impl<'a> UniformBufferObject<'a> {
             size: total_size,
             sub_uniforms: sub_uniforms.to_vec(),
         }
-    }
-
-    pub fn bind_to_layout(&self, layout: u32) {
-        unsafe {
-            self.gl
-                .BindBufferRange(gl::UNIFORM_BUFFER, layout, self.id, 0, self.size)
-        };
     }
 
     pub fn write_sub_data(&self, uniform: &str, data: *const c_void) {

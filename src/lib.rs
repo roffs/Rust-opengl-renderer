@@ -10,7 +10,7 @@ mod uniform_buffer_object;
 
 use std::path::Path;
 
-use cgmath::{Deg, InnerSpace, Matrix, Matrix4, Point3, SquareMatrix};
+use cgmath::{Array, Deg, InnerSpace, Matrix, Matrix4, Point3, SquareMatrix};
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 
 use camera::{Camera, CameraController};
@@ -75,10 +75,11 @@ pub fn run() {
     // ------------
 
     // GLOBAL UNIFORMS
-    let matrix4_size = std::mem::size_of::<cgmath::Matrix4<f32>>() as isize;
+    let matrix4_size = std::mem::size_of::<Matrix4<f32>>() as isize;
 
     let matrix_ubo = UniformBufferObject::new(
         &gl,
+        0,
         &[
             ("projection", matrix4_size),
             ("view", matrix4_size),
@@ -86,7 +87,12 @@ pub fn run() {
             ("normalMatrix", matrix4_size),
         ],
     );
-    matrix_ubo.bind_to_layout(0);
+
+    let light_ubo = UniformBufferObject::new(
+        &gl,
+        1,
+        &[("lightPos", std::mem::size_of::<Point3<f32>>() as isize)],
+    );
 
     // ENABLE DEPTH TESTING
 
@@ -117,10 +123,11 @@ pub fn run() {
             matrix_ubo.write_sub_data("model", model_matrix.as_ptr().cast());
             matrix_ubo.write_sub_data("normalMatrix", normal_matrix.as_ptr().cast());
 
-            let light_pos = Point3::new(-1.5, 1.5, 1.5);
+            let light_pos = Point3::<f32>::new(-1.5, 1.5, 1.5);
+            light_ubo.write_sub_data("lightPos", light_pos.as_ptr().cast());
 
             let uniforms: Vec<Box<dyn Uniform>> = vec![
-                Uniform3f::new("lightPos", light_pos),
+                // Uniform3f::new("lightPos", light_pos),
                 Uniform3f::new("viewPos", camera.get_position()),
             ];
 
