@@ -76,14 +76,16 @@ pub fn run() {
 
     // GLOBAL UNIFORMS
     let matrix4_size = std::mem::size_of::<cgmath::Matrix4<f32>>() as isize;
-    let sub_uniforms = &[
-        ("projection", matrix4_size),
-        ("view", matrix4_size),
-        ("model", matrix4_size),
-        ("normalMatrix", matrix4_size),
-    ];
 
-    let matrix_ubo = UniformBufferObject::new(&gl, sub_uniforms);
+    let matrix_ubo = UniformBufferObject::new(
+        &gl,
+        &[
+            ("projection", matrix4_size),
+            ("view", matrix4_size),
+            ("model", matrix4_size),
+            ("normalMatrix", matrix4_size),
+        ],
+    );
     matrix_ubo.bind_to_layout(0);
 
     // ENABLE DEPTH TESTING

@@ -4,11 +4,11 @@ pub struct UniformBufferObject<'a> {
     gl: gl::Gl,
     id: u32,
     size: isize,
-    sub_uniforms: &'a [(&'a str, isize)],
+    sub_uniforms: Vec<(&'a str, isize)>,
 }
 
 impl<'a> UniformBufferObject<'a> {
-    pub fn new(gl: &gl::Gl, sub_uniforms: &'a [(&'a str, isize)]) -> UniformBufferObject<'a> {
+    pub fn new(gl: &gl::Gl, sub_uniforms: &[(&'a str, isize)]) -> UniformBufferObject<'a> {
         let mut id = 0;
 
         let total_size = sub_uniforms.iter().map(|(_, size)| size).sum();
@@ -28,7 +28,7 @@ impl<'a> UniformBufferObject<'a> {
             gl: gl.clone(),
             id,
             size: total_size,
-            sub_uniforms,
+            sub_uniforms: sub_uniforms.to_vec(),
         }
     }
 

@@ -48,15 +48,6 @@ impl Program {
         unsafe { self.gl.UseProgram(self.id) };
     }
 
-    pub fn set_global_uniforms(&self) {
-        unsafe {
-            let uniform_block_index = self
-                .gl
-                .GetUniformBlockIndex(self.id, "Matrices".as_bytes().as_ptr() as *const i8);
-            self.gl.UniformBlockBinding(self.id, uniform_block_index, 0);
-        };
-    }
-
     pub fn set_uniforms(&self, uniforms: &Vec<Box<dyn Uniform>>) {
         for uniform in uniforms {
             uniform.set(&self.gl, self.id);
