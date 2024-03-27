@@ -6,6 +6,7 @@ mod resources;
 mod shader;
 mod texture;
 mod uniform;
+mod uniform_buffer_object;
 
 use std::path::Path;
 
@@ -17,6 +18,7 @@ use camera::{Camera, CameraController};
 use resources::ResourceLoader;
 use shader::{Program, Shader};
 use uniform::{Uniform, Uniform3f, UniformMat4f};
+use uniform_buffer_object::UniformBufferObject;
 
 const WIDTH: u32 = 1080;
 const HEIGHT: u32 = 720;
@@ -68,31 +70,16 @@ pub fn run() {
         Shader::from_fragment_source(&gl, &resources, "assets/shaders/shader.frag").unwrap();
     let program = Program::from_shaders(&gl, &[vertex_shader, fragment_shader]).unwrap();
 
-    program.set_global_uniforms();
-
     // --- TEMP ---
     let model_3d = resources.load_model(&gl, "assets/models/stone_cube/scene.gltf", &program);
     // ------------
 
     // GLOBAL UNIFORMS
-    let mut ubo = 0;
-    unsafe {
-        gl.GenBuffers(1, &mut ubo);
-        gl.BindBuffer(gl::UNIFORM_BUFFER, ubo);
-        gl.BufferData(
-            gl::UNIFORM_BUFFER,
-            2 * std::mem::size_of::<cgmath::Matrix4<f32>>() as isize,
-            std::ptr::null(),
-            gl::STATIC_DRAW,
-        );
-        gl.BindBufferRange(
-            gl::UNIFORM_BUFFER,
-            0,
-            ubo,
-            0,
-            2 * std::mem::size_of::<cgmath::Matrix4<f32>>() as isize,
-        );
-    }
+    let matrix4_size = std::mem::size_of::<cgmath::Matrix4<f32>>() as isize;
+    let sub_uniforms = &[("projection", matrix4_size), ("view", matrix4_size)];
+
+    let matrix_ubo = UniformBufferObject::new(&gl, sub_uniforms);
+    matrix_ubo.bind_to_layout(0);
 
     // ENABLE DEPTH TESTING
 
@@ -115,19 +102,8 @@ pub fn run() {
             gl.ClearColor(0.3, 0.4, 0.6, 1.0);
             gl.Clear(gl::COLOR_BUFFER_BIT | gl::DEPTH_BUFFER_BIT);
 
-            gl.BufferSubData(
-                gl::UNIFORM_BUFFER,
-                0,
-                std::mem::size_of::<cgmath::Matrix4<f32>>() as isize,
-                camera.get_projection().as_ptr().cast(),
-            );
-
-            gl.BufferSubData(
-                gl::UNIFORM_BUFFER,
-                std::mem::size_of::<cgmath::Matrix4<f32>>() as isize,
-                std::mem::size_of::<cgmath::Matrix4<f32>>() as isize,
-                camera.get_view().as_ptr().cast(),
-            );
+            matrix_ubo.write_sub_data("projection", camera.get_projection().as_ptr().cast());
+            matrix_ubo.write_sub_data("view", camera.get_view().as_ptr().cast());
 
             let model_matrix = Matrix4::from_angle_x(cgmath::Deg(-90.0));
             let normal_matrix = model_matrix.invert().unwrap().transpose();
