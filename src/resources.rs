@@ -85,6 +85,18 @@ impl ResourceLoader {
         Ok(img)
     }
 
+    // Todo make a more flexible load_iamge function that can load multiple formats
+    pub fn load_jpg(
+        &self,
+        resource_path: &str,
+    ) -> Result<ImageBuffer<image::Rgb<u8>, Vec<u8>>, Error> {
+        let absolute_path =
+            relative_to_absolute_resource_path(&self.root_path, Path::new(resource_path));
+        let img = Reader::open(absolute_path)?.decode()?.to_rgb8();
+
+        Ok(img)
+    }
+
     pub fn load_model<'a>(
         &'a self,
         gl: &gl::Gl,

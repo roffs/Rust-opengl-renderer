@@ -1,19 +1,17 @@
 mod primitives;
 mod vertex;
 
-use crate::material::Material;
-
-pub use self::vertex::{MeshVertex, Vertex};
+pub use self::vertex::{MeshVertex, SkyboxVertex, Vertex};
 
 pub struct Mesh<T: Vertex> {
     gl: gl::Gl,
 
     vertices: Vec<T>,
-    indices: Vec<i32>,
+    pub indices: Vec<i32>,
 
-    vao: gl::types::GLuint,
-    vbo: gl::types::GLuint,
-    ebo: gl::types::GLuint,
+    pub vao: gl::types::GLuint,
+    pub vbo: gl::types::GLuint,
+    pub ebo: gl::types::GLuint,
 }
 
 impl<T: Vertex> Mesh<T> {

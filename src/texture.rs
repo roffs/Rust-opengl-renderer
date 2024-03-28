@@ -8,20 +8,21 @@ pub struct Texture {
 
 impl Texture {
     fn new(gl: &gl::Gl, img: image::ImageBuffer<image::Rgba<u8>, Vec<u8>>) -> Texture {
-        let mut id: gl::types::GLuint = 0;
-        unsafe { gl.GenTextures(1, &mut id) };
+        let mut id = 0;
 
         unsafe {
+            gl.GenTextures(1, &mut id);
             gl.BindTexture(gl::TEXTURE_2D, id);
 
-            gl.TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
-            gl.TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
+            let target = gl::TEXTURE_2D;
+            gl.TexParameteri(target, gl::TEXTURE_WRAP_S, gl::REPEAT as i32);
+            gl.TexParameteri(target, gl::TEXTURE_WRAP_T, gl::REPEAT as i32);
             gl.TexParameteri(
-                gl::TEXTURE_2D,
+                target,
                 gl::TEXTURE_MIN_FILTER,
                 gl::LINEAR_MIPMAP_LINEAR as i32,
             );
-            gl.TexParameteri(gl::TEXTURE_2D, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
+            gl.TexParameteri(target, gl::TEXTURE_MAG_FILTER, gl::LINEAR as i32);
             gl.TexImage2D(
                 gl::TEXTURE_2D,
                 0,
@@ -34,8 +35,6 @@ impl Texture {
                 img.as_ptr().cast(),
             );
             gl.GenerateMipmap(gl::TEXTURE_2D);
-
-            gl.BindTexture(gl::TEXTURE_2D, 0);
         }
 
         Texture { gl: gl.clone(), id }

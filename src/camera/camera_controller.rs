@@ -1,6 +1,6 @@
 use cgmath::Deg;
 
-use super::{calculate_local_directions, Camera};
+use super::Camera;
 
 pub struct CameraController {
     move_speed: f32,
