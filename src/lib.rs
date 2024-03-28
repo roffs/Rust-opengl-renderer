@@ -1,5 +1,4 @@
 mod camera;
-mod cube_map;
 mod material;
 mod mesh;
 mod model;
@@ -13,15 +12,14 @@ mod uniform_buffer_object;
 use std::path::Path;
 
 use cgmath::{Array, Deg, InnerSpace, Matrix, Matrix4, Point3, SquareMatrix};
-use cube_map::CubeMap;
 use glfw::{Context, OpenGlProfileHint, WindowHint};
 
 use camera::{Camera, CameraController};
 
-use mesh::{Mesh, SkyboxVertex};
 use resources::ResourceLoader;
 use shader::{Program, Shader};
-use uniform::{Uniform, Uniform3f, UniformMat4f};
+use skybox::Skybox;
+use uniform::{Uniform, Uniform3f};
 use uniform_buffer_object::UniformBufferObject;
 
 const WIDTH: u32 = 1080;
@@ -99,67 +97,7 @@ pub fn run() {
     );
 
     // SKYBOX
-
-    let images_paths = [
-        "assets/skybox/sky/right.jpg",
-        "assets/skybox/sky/left.jpg",
-        "assets/skybox/sky/top.jpg",
-        "assets/skybox/sky/bottom.jpg",
-        "assets/skybox/sky/front.jpg",
-        "assets/skybox/sky/back.jpg",
-    ];
-    let cube_map = CubeMap::load(&gl, &resources, images_paths).unwrap();
-
-    let skybox_vertices = vec![
-        // Front
-        SkyboxVertex::new((-1.0, -1.0, 1.0)),
-        SkyboxVertex::new((1.0, -1.0, 1.0)),
-        SkyboxVertex::new((1.0, 1.0, 1.0)),
-        SkyboxVertex::new((-1.0, 1.0, 1.0)),
-        // Back
-        SkyboxVertex::new((-1.0, -1.0, -1.0)),
-        SkyboxVertex::new((1.0, -1.0, -1.0)),
-        SkyboxVertex::new((1.0, 1.0, -1.0)),
-        SkyboxVertex::new((-1.0, 1.0, -1.0)),
-        // Left
-        SkyboxVertex::new((-1.0, -1.0, -1.0)),
-        SkyboxVertex::new((-1.0, -1.0, 1.0)),
-        SkyboxVertex::new((-1.0, 1.0, 1.0)),
-        SkyboxVertex::new((-1.0, 1.0, -1.0)),
-        // Right
-        SkyboxVertex::new((1.0, -1.0, -1.0)),
-        SkyboxVertex::new((1.0, -1.0, 1.0)),
-        SkyboxVertex::new((1.0, 1.0, 1.0)),
-        SkyboxVertex::new((1.0, 1.0, -1.0)),
-        // Top
-        SkyboxVertex::new((-1.0, 1.0, 1.0)),
-        SkyboxVertex::new((1.0, 1.0, 1.0)),
-        SkyboxVertex::new((1.0, 1.0, -1.0)),
-        SkyboxVertex::new((-1.0, 1.0, -1.0)),
-        // Bottom
-        SkyboxVertex::new((-1.0, -1.0, 1.0)),
-        SkyboxVertex::new((1.0, -1.0, 1.0)),
-        SkyboxVertex::new((1.0, -1.0, -1.0)),
-        SkyboxVertex::new((-1.0, -1.0, -1.0)),
-    ];
-
-    let skybox_indices = vec![
-        0, 1, 2, 0, 2, 3, // Front
-        4, 7, 6, 4, 6, 5, // Back
-        8, 9, 10, 8, 10, 11, // Left
-        12, 15, 14, 12, 14, 13, // Right
-        16, 17, 18, 16, 18, 19, // Top
-        20, 23, 22, 20, 22, 21, // Bottom
-    ];
-
-    let skybox = Mesh::create(&gl, skybox_vertices, skybox_indices);
-
-    let skybox_vertex_shader =
-        Shader::from_vertex_source(&gl, &resources, "assets/shaders/skybox.vert").unwrap();
-    let skybox_fragment_shader =
-        Shader::from_fragment_source(&gl, &resources, "assets/shaders/skybox.frag").unwrap();
-    let skybox_program =
-        Program::from_shaders(&gl, &[skybox_vertex_shader, skybox_fragment_shader]).unwrap();
+    let skybox = Skybox::new(&gl, &resources);
 
     // ENABLE DEPTH TESTING
 
@@ -195,25 +133,7 @@ pub fn run() {
             light_ubo.write_sub_data("lightPos", light_pos.as_ptr().cast());
 
             // SKYBOX
-            gl.DepthMask(gl::FALSE);
-            skybox_program.use_program();
-
-            let skybox_uniforms: Vec<Box<dyn Uniform>> =
-                vec![UniformMat4f::new("view", camera.get_rotation())];
-
-            skybox_program.set_uniforms(&skybox_uniforms);
-            gl.BindVertexArray(skybox.vao);
-            gl.BindBuffer(gl::ARRAY_BUFFER, skybox.vbo);
-            gl.BindBuffer(gl::ELEMENT_ARRAY_BUFFER, skybox.ebo);
-            gl.BindTexture(gl::TEXTURE_CUBE_MAP, cube_map.id);
-
-            gl.DrawElements(
-                gl::TRIANGLES,
-                skybox.indices.len() as i32,
-                gl::UNSIGNED_INT,
-                std::ptr::null(),
-            );
-            gl.DepthMask(gl::TRUE);
+            skybox.draw(&camera);
 
             let uniforms: Vec<Box<dyn Uniform>> = vec![
                 // Uniform3f::new("lightPos", light_pos),

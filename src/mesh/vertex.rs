@@ -83,29 +83,3 @@ impl Vertex for MeshVertex {
         }
     }
 }
-
-#[derive(Clone, Copy)]
-#[repr(C, packed)]
-pub struct SkyboxVertex {
-    position: Point3<f32>,
-}
-
-impl SkyboxVertex {
-    pub fn new<T: Into<cgmath::Point3<f32>>>(position: T) -> SkyboxVertex {
-        SkyboxVertex {
-            position: position.into(),
-        }
-    }
-}
-
-impl Vertex for SkyboxVertex {
-    fn set_vertex_attrib_pointer(gl: &gl::Gl) {
-        let stride = 3 * std::mem::size_of::<f32>() as i32;
-
-        println!("setting skybox vertex attrib pointer");
-        unsafe {
-            gl.VertexAttribPointer(0, 3, gl::FLOAT, gl::FALSE, stride, std::ptr::null());
-            gl.EnableVertexAttribArray(0);
-        }
-    }
-}

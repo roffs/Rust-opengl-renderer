@@ -1,7 +1,7 @@
 mod primitives;
 mod vertex;
 
-pub use self::vertex::{MeshVertex, SkyboxVertex, Vertex};
+pub use self::vertex::{MeshVertex, Vertex};
 
 pub struct Mesh<T: Vertex> {
     gl: gl::Gl,
