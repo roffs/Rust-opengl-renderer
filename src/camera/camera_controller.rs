@@ -1,4 +1,4 @@
-use cgmath::{Deg, Rad};
+use cgmath::Deg;
 
 use super::Camera;
 

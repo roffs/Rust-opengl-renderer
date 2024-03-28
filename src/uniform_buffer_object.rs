@@ -3,7 +3,6 @@ use std::os::raw::c_void;
 pub struct UniformBufferObject<'a> {
     gl: gl::Gl,
     id: u32,
-    size: isize,
     sub_uniforms: Vec<(&'a str, isize)>,
 }
 
@@ -33,7 +32,6 @@ impl<'a> UniformBufferObject<'a> {
         UniformBufferObject {
             gl: gl.clone(),
             id,
-            size: total_size,
             sub_uniforms: sub_uniforms.to_vec(),
         }
     }

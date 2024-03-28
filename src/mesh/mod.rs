@@ -1,12 +1,10 @@
-mod primitives;
 mod vertex;
 
 pub use self::vertex::{MeshVertex, Vertex};
 
-pub struct Mesh<T: Vertex> {
+pub struct Mesh {
     gl: gl::Gl,
 
-    vertices: Vec<T>,
     pub indices: Vec<i32>,
 
     pub vao: gl::types::GLuint,
@@ -14,8 +12,8 @@ pub struct Mesh<T: Vertex> {
     pub ebo: gl::types::GLuint,
 }
 
-impl<T: Vertex> Mesh<T> {
-    pub fn create(gl: &gl::Gl, vertices: Vec<T>, indices: Vec<i32>) -> Mesh<T> {
+impl Mesh {
+    pub fn create<T: Vertex>(gl: &gl::Gl, vertices: Vec<T>, indices: Vec<i32>) -> Mesh {
         let mut vao = 0;
         unsafe { gl.GenVertexArrays(1, &mut vao) };
 
@@ -49,7 +47,6 @@ impl<T: Vertex> Mesh<T> {
         Mesh {
             gl: gl.clone(),
 
-            vertices,
             indices,
 
             vao,

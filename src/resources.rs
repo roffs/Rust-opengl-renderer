@@ -3,8 +3,6 @@ use std::fs;
 use std::io::{self, Read};
 use std::path::{Path, PathBuf};
 
-use cgmath::Point3;
-use cgmath::Vector2;
 use cgmath::Vector3;
 use image::ImageBuffer;
 use image::{io::Reader, ImageError};

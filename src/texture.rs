@@ -72,7 +72,6 @@ impl Drop for Texture {
 }
 
 pub struct CubeMap {
-    gl: gl::Gl,
     pub id: gl::types::GLuint,
 }
 
@@ -107,7 +106,7 @@ impl CubeMap {
             }
         }
 
-        CubeMap { gl: gl.clone(), id }
+        CubeMap { id }
     }
 
     pub fn load(

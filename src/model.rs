@@ -1,16 +1,12 @@
-use crate::{
-    material::Material,
-    mesh::{Mesh, MeshVertex},
-    uniform::Uniform,
-};
+use crate::{material::Material, mesh::Mesh, uniform::Uniform};
 
 pub struct Model<'a> {
-    meshes: Vec<(Mesh<MeshVertex>, i32)>,
+    meshes: Vec<(Mesh, i32)>,
     materials: Vec<Material<'a>>,
 }
 
 impl<'a> Model<'a> {
-    pub fn new(meshes: Vec<(Mesh<MeshVertex>, i32)>, materials: Vec<Material>) -> Model {
+    pub fn new(meshes: Vec<(Mesh, i32)>, materials: Vec<Material>) -> Model {
         Model { meshes, materials }
     }
 

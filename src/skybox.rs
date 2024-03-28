@@ -11,7 +11,7 @@ use crate::{
 
 pub struct Skybox {
     gl: gl::Gl,
-    mesh: Mesh<SkyboxVertex>,
+    mesh: Mesh,
     cube_map: CubeMap,
     program: Program,
 }
