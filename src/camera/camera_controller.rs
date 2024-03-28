@@ -1,4 +1,4 @@
-use cgmath::Deg;
+use cgmath::{Deg, Rad};
 
 use super::Camera;
 
@@ -26,7 +26,13 @@ impl CameraController {
         let (yaw, pitch) = delta;
 
         camera.yaw += Deg(yaw * self.rotation_speed).into();
+
         camera.pitch -= Deg(pitch * self.rotation_speed).into();
+        camera.pitch = match camera.pitch {
+            angle if angle < Deg(-90.0).into() => Deg(-90.0).into(),
+            angle if angle > Deg(90.0).into() => Deg(90.0).into(),
+            angle => angle,
+        };
 
         camera.update_directions();
     }
