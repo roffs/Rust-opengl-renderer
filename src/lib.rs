@@ -54,7 +54,7 @@ pub fn run() {
 
     let gl = gl::Gl::load_with(|s| window.get_proc_address(s) as *const _);
 
-    let camera_controller = CameraController::new(10.0, 0.2);
+    let camera_controller = CameraController::new(5.0, 0.15);
     let mut camera = Camera::new(
         (0.0, 0.0, 3.0),
         Deg(-90.0),

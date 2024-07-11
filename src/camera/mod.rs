@@ -1,11 +1,7 @@
 mod camera_controller;
-mod utils;
-
-use cgmath::{perspective, Deg, Matrix4, Point3, Rad, Vector3};
+use cgmath::{perspective, Angle, Deg, Matrix4, Point3, Rad, Vector3};
 
 pub use camera_controller::CameraController;
-
-use self::utils::calculate_local_directions;
 
 pub struct Camera {
     pub(self) position: Point3<f32>,
@@ -78,4 +74,20 @@ impl Camera {
         self.right = right;
         self.forward = forward;
     }
+}
+
+fn calculate_local_directions(
+    yaw: Rad<f32>,
+    pitch: Rad<f32>,
+) -> (Vector3<f32>, Vector3<f32>, Vector3<f32>, Vector3<f32>) {
+    let x = yaw.cos() * pitch.cos();
+    let y = pitch.sin();
+    let z = yaw.sin() * pitch.cos();
+
+    let look_dir = Vector3::new(x, y, z);
+    let up = Vector3::new(0.0, 1.0, 0.0);
+    let right = look_dir.cross(up);
+    let forward = up.cross(right);
+
+    (look_dir, up, right, forward)
 }
